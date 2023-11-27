@@ -55,7 +55,8 @@ int                             gListenFds;
 
 int                             gXKBBase = 0;
 int                             gShapeBase = 0;
-
+int                             gRandrBase = -1;
+int                             gXKBCurrentGroup;
 int                             gXCBNubLockMask = 0;
 
 xcb_key_symbols_t*              gKeySymbols;
@@ -78,6 +79,7 @@ xcb_screen_t*                   gRootScreen = NULL;
 
 const char*                     gLogPath = "/tmp/graceful-wm.log";
 static struct ev_prepare*       gXcbPrepare = NULL;
+GWMContainer*                   gContainerRoot = NULL;
 
 // 定义全局 atoms
 #define GWM_ATOM_MACRO(atom) xcb_atom_t A_##atom;
@@ -354,7 +356,7 @@ int main(int argc, char* argv[])
     }
 
     // restore connect
-    restore_connect();
+//    restore_connect();
 
     handler_property_init();
 
