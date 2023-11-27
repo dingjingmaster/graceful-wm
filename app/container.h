@@ -13,5 +13,8 @@
 #include "types.h"
 
 
+GWMContainer* container_descend_focused (GWMContainer* con);
+void container_activate (GWMContainer* con);
+
 
 #endif //GRACEFUL_WM_CONTAINER_H

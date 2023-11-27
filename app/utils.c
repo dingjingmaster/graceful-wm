@@ -17,7 +17,9 @@ xcb_visualtype_t *get_visual_type(xcb_screen_t *screen)
     return NULL;
 }
 
-void init_dpi(void)
+uint32_t util_get_mod_mask_for(uint32_t keySym, xcb_key_symbols_t *symbols)
 {
-
+    return 0;
 }
+
+

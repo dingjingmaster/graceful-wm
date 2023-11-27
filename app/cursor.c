@@ -9,7 +9,7 @@ void cursor_load_cursor(void)
 
 }
 
-xcb_cursor_t cursor_get_cursor(Cursor cursor)
+xcb_cursor_t cursor_get_cursor(GWMCursor cursor)
 {
     return 0;
 }

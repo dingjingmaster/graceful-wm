@@ -13,5 +13,6 @@ bool command_line_parse(int argc, int** argv);
 void command_line_help();
 
 bool command_line_get_is_replace();
+bool command_line_get_is_only_check_config();
 
 #endif //GRACEFUL_WM_COMMAND_LINE_H

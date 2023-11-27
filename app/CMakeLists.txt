@@ -7,8 +7,10 @@ file(GLOB APP_MAIN *.h *.c)
 add_executable(graceful-wm main.c
         ${COMMON_SRC} ${APP_MAIN})
 
-target_link_libraries(graceful-wm -lX11 -lXmu
+target_link_libraries(graceful-wm
+        ${LIBS}
         ${SN_LIBRARIES}
+        ${XCB_LIBRARIES}
         ${GLIB_LIBRARIES}
         ${PCRE_LIBRARIES}
         ${CAIRO_LIBRARIES}
@@ -16,6 +18,7 @@ target_link_libraries(graceful-wm -lX11 -lXmu
 )
 target_include_directories(graceful-wm PUBLIC
         ${SN_INCLUDE_DIRS}
+        ${XCB_INCLUDE_DIRS}
         ${GLIB_INCLUDE_DIRS}
         ${PCRE_INCLUDE_DIRS}
         ${CAIRO_INCLUDE_DIRS}

@@ -8,26 +8,60 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <xcb/xcb.h>
+#include <xcb/shape.h>
 #include <xcb/randr.h>
 #include <cairo/cairo.h>
 #include <pango/pango.h>
 #include <libsn/sn-launcher.h>
 
-typedef enum GapsMask                   GapsMask;                   // ok
 
+typedef enum Layout                     GWMLayout;                  // ok
+typedef enum GapsMask                   GapsMask;                   // ok
+typedef enum FullScreenMode             GWMFullScreenMode;          // ok
+typedef enum BorderStyle                GWMBorder;                  // ok
+typedef enum KillWindow                 GWMKillWindow;              // ok
+
+typedef struct Output                   GWMOutput;                  // ok
+typedef struct OutputName               GWMOutputName;              // ok
 typedef struct Gaps                     Gaps;                       // ok
 typedef struct Size                     Size;                       // ok
-typedef struct Rect                     Rect;                       // ok
+typedef struct Rect                     GWMRect;                    // ok
 typedef struct Regex                    Regex;                      // ok
 typedef struct Match                    Match;                      // ok
 typedef struct Window                   GWMWindow;                  // ok
 typedef struct Font                     GWMFont;                    // ok
+typedef struct Color                    GWMColor;                   // ok
 typedef struct Surface                  Surface;                    // ok
 typedef struct Assignment               Assignment;                 // ok
-typedef struct Container                Container;                  //
+typedef struct Container                GWMContainer;               // ok
 typedef struct ReserveEdgePixels        ReserveEdgePixels;          // ok
-typedef struct DecorationRenderParams   DecorationRenderParams;     //
+typedef struct DecorationRenderParams   GWMDecorationRenderParams;  // ok
 
+
+enum BorderStyle
+{
+    BS_NONE         = 0,
+    BS_PIXEL        = 1,
+    BS_NORMAL       = 2,
+};
+
+enum FullScreenMode
+{
+    CF_NONE         = 0,
+    CF_OUTPUT       = 1,
+    CF_GLOBAL       = 2,
+};
+
+enum Layout
+{
+    L_DEFAULT       = 0,
+    L_STACKED       = 1,
+    L_TABBED        = 2,
+    L_DOCK_AREA     = 3,
+    L_OUTPUT        = 4,
+    L_SPLIT_V       = 5,
+    L_SPLIT_H       = 6,
+};
 
 enum GapsMask
 {
@@ -39,6 +73,13 @@ enum GapsMask
     GAPS_VERTICAL   = (GAPS_TOP | GAPS_BOTTOM),
     GAPS_HORIZONTAL = (GAPS_RIGHT | GAPS_LEFT),
     GAPS_OUTER      = (GAPS_VERTICAL | GAPS_HORIZONTAL),
+};
+
+enum KillWindow
+{
+    KILL_WINDOW_DO_NOT  = 0,
+    KILL_WINDOW         = 1,
+    KILL_CLIENT         = 2,
 };
 
 struct Regex
@@ -70,12 +111,43 @@ struct Gaps
     int                         left;
 };
 
+struct Color
+{
+    double                      red;
+    double                      green;
+    double                      blue;
+    double                      alpha;
+
+    uint32_t                    colorPixel;
+};
+
 struct ReserveEdgePixels
 {
     uint32_t                    left;
     uint32_t                    right;
     uint32_t                    top;
     uint32_t                    bottom;
+};
+
+struct OutputName
+{
+    char*                       name;
+    GSList*                     names;              // OutputName
+};
+
+struct Output
+{
+    xcb_randr_output_t          id;
+    bool                        active;
+    bool                        changed;
+    bool                        primary;
+    bool                        toBeDisabled;
+
+    GQueue                      namesHead;          // OutputName
+    GQueue                      outputs;            // Output
+
+    GWMContainer*               container;
+    GWMRect                     rect;
 };
 
 struct Font
@@ -106,9 +178,9 @@ struct DecorationRenderParams
     int                         borderStyle;
     Size                        containerSize;
     Size                        containerWindowSize;
-    Rect                        containerDecorationRect;
-    color_t                     background;
-    layout_t                    parentLayout;
+    GWMRect                     containerDecorationRect;
+    GWMColor                    background;
+    GWMLayout                   parentLayout;
     bool                        containerIsLeaf;
 };
 
@@ -148,7 +220,7 @@ struct Match
         WM_FLOATING_USER,
         WM_FLOATING
     } windowMode;
-    Container*                  containerID;
+    GWMContainer*               containerID;
     bool                        matchAllWindows;
 
     enum {
@@ -272,11 +344,11 @@ struct Container
 
     int                         workspaceNum;
     Gaps                        gaps;
-    Container*                  parent;
-    Rect                        rect;
-    Rect                        windowRect;
-    Rect                        decorationRect;
-    Rect                        geoRect;
+    GWMContainer*               parent;
+    GWMRect                     rect;
+    GWMRect                     windowRect;
+    GWMRect                     decorationRect;
+    GWMRect                     geoRect;
 
     char*                       name;
     char*                       titleFormat;
@@ -293,11 +365,46 @@ struct Container
 
     Window*                     window;                     //
     struct ev_timer*            urgencyTimer;
+    GWMDecorationRenderParams*  decorationRenderParams;
+    GQueue                      floatingHead;               // Container
+    GQueue                      nodesHead;                  // Container
+    GQueue                      focusHead;                  // Container
+    GQueue                      swallowHead;                // Match
+    GWMFullScreenMode           fullScreenMode;
 
-    // FIXME://
+    bool                        sticky;
 
+    GWMLayout                   layout;
+    GWMLayout                   lastSplitLayout;
+    GWMLayout                   workspaceLayout;
 
+    GWMBorder                   borderStyle;
+    GWMBorder                   maxUserBorderStyle;
 
+    enum {
+        FLOATING_AUTO_OFF   = 0,
+        FLOATING_USER_OFF   = 1,
+        FLOATING_AUTO_ON    = 2,
+        FLOATING_USER_ON    = 3,
+    } floating;
+
+    GQueue                      nodes;
+    GQueue                      focused;
+    GQueue                      allContainers;
+    GQueue                      floatingWindows;
+
+    // callbacks
+    void (*OnRemoveChild) (GWMContainer*);
+
+    enum {
+        SCRATCHPAD_NONE     = 0,
+        SCRATCHPAD_FRESH    = 1,
+        SCRATCHPAD_CHANGED  = 2,
+    } scratchpadState;
+
+    int                         oldID;
+    uint16_t                    depth;
+    xcb_colormap_t              colormap;
 };
 
 

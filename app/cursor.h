@@ -19,11 +19,11 @@ typedef enum Cursor
     CURSOR_BUTTON_WATCH,
     CURSOR_BUTTON_MOVE,
     CURSOR_BUTTON_MAX,
-} Cursor;
+} GWMCursor;
 
 
 void            cursor_load_cursor(void);
-xcb_cursor_t    cursor_get_cursor(Cursor cursor);
+xcb_cursor_t    cursor_get_cursor(GWMCursor cursor);
 void            cursor_set_root_cursor(int cursorID);
 
 

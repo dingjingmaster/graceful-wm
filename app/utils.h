@@ -15,7 +15,6 @@
 #include <xcb/xcb_keysyms.h>
 
 
-void init_dpi(void);
 xcb_visualtype_t* get_visual_type (xcb_screen_t* screen);
 
 uint32_t util_get_mod_mask_for (uint32_t keySym, xcb_key_symbols_t* symbols);

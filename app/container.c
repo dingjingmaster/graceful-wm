@@ -3,3 +3,13 @@
 //
 
 #include "container.h"
+
+void container_activate(GWMContainer *con)
+{
+
+}
+
+GWMContainer *container_descend_focused(GWMContainer *con)
+{
+    return NULL;
+}

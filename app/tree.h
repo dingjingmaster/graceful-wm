@@ -7,6 +7,7 @@
 #include <xcb/xcb.h>
 
 
-void tree_init(xcb_get_geometry_reply_t* geo);
+void tree_render (void);
+void tree_init (xcb_get_geometry_reply_t* geo);
 
 #endif //GRACEFUL_WM_TREE_H

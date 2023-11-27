@@ -12,12 +12,14 @@
 static int              isReplace = 0;
 static char*            configFile = NULL;
 static int              isShowVersion = 0;
+static int              isOnlyCheckConf = 0;
 
 static GOptionContext* gOptionCtx = NULL;
 static GOptionEntry gEntries[] =
     {
         {"replace", 'r', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_INT, &isReplace, N_("Replace an existing window manager.")},
         {"config", 'c', G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_FILENAME, &configFile, N_("Custom profile path (default :/etc/graceful-wm.conf).")},
+        {"check", 'C', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_FILENAME, &isOnlyCheckConf, N_("Exits after detecting the configuration file.")},
         {"version", 'v', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_INT, &isShowVersion, N_("Display version information.")},
         NULL
     };
@@ -50,4 +52,9 @@ void command_line_help()
 bool command_line_get_is_replace()
 {
     return (isReplace != 0);
+}
+
+bool command_line_get_is_only_check_config()
+{
+    return (1 == isOnlyCheckConf);
 }

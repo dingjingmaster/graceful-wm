@@ -3,3 +3,8 @@
 //
 
 #include "output.h"
+
+GWMContainer *output_get_content(GWMContainer *output)
+{
+    return NULL;
+}
