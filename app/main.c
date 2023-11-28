@@ -62,6 +62,7 @@ int                             gXCBNubLockMask = 0;
 xcb_key_symbols_t*              gKeySymbols;
 
 xcb_atom_t                      gWMSn;
+xcb_atom_t                      gExtendWMHintsWindow;
 xcb_window_t                    gWMSnSelectionOwner;
 
 xcb_colormap_t                  gColormap;
@@ -80,6 +81,7 @@ xcb_screen_t*                   gRootScreen = NULL;
 const char*                     gLogPath = "/tmp/graceful-wm.log";
 static struct ev_prepare*       gXcbPrepare = NULL;
 GWMContainer*                   gContainerRoot = NULL;
+GWMContainer*                   gFocused;
 
 // 定义全局 atoms
 #define GWM_ATOM_MACRO(atom) xcb_atom_t A_##atom;

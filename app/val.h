@@ -17,11 +17,14 @@ extern int                              gXKBCurrentGroup;
 
 extern xcb_window_t                     gRoot;
 extern xcb_connection_t*                gConn;
+extern GWMContainer*                    gFocused;
 extern struct ev_loop*                  gMainLoop;
 extern SnDisplay*                       gSnDisplay;
 extern xcb_screen_t*                    gRootScreen;
 extern xcb_timestamp_t                  gLastTimestamp;
 extern GWMContainer*                    gContainerRoot;
+extern xcb_atom_t                       gExtendWMHintsWindow;
+
 
 // atom declare
 #define GWM_ATOM_MACRO(atom) extern xcb_atom_t A_##atom;

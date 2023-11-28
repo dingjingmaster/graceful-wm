@@ -25,6 +25,7 @@ typedef enum KillWindow                 GWMKillWindow;              // ok
 typedef enum Orientation                GWMOrientation;             // ok
 typedef enum BorderStyle                GWMBorderStyle;             // ok
 typedef enum FullScreenMode             GWMFullScreenMode;          // ok
+typedef enum Cursor                     GWMCursor;                  // ok
 
 typedef struct Output                   GWMOutput;                  // ok
 typedef struct OutputName               GWMOutputName;              // ok
@@ -107,6 +108,20 @@ enum KillWindow
     KILL_WINDOW_DO_NOT  = 0,
     KILL_WINDOW         = 1,
     KILL_CLIENT         = 2,
+};
+
+enum Cursor
+{
+    CURSOR_POINTER = 0,
+    CURSOR_RESIZE_HORIZONTAL,
+    CURSOR_RESIZE_VERTICAL,
+    CURSOR_TOP_LEFT_CORNER,
+    CURSOR_TOP_RIGHT_CORNER,
+    CURSOR_BOTTOM_LEFT_CORNER,
+    CURSOR_BOTTOM_RIGHT_CORNER,
+    CURSOR_WATCH,
+    CURSOR_MOVE,
+    CURSOR_MAX,
 };
 
 enum Adjacent
