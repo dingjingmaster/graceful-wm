@@ -59,6 +59,12 @@ int                             gRandrBase = -1;
 int                             gXKBCurrentGroup;
 int                             gXCBNubLockMask = 0;
 
+unsigned int                    gXCBNumLockMask = 0;
+
+char*                           gCurConfigPath = NULL;
+
+const char*                     gCurrentBindingMode = NULL;
+
 xcb_key_symbols_t*              gKeySymbols;
 
 xcb_atom_t                      gWMSn;
@@ -82,6 +88,11 @@ const char*                     gLogPath = "/tmp/graceful-wm.log";
 static struct ev_prepare*       gXcbPrepare = NULL;
 GWMContainer*                   gContainerRoot = NULL;
 GWMContainer*                   gFocused;
+
+GQueue                          gAllContainer;                          // GWMContainer
+
+GSList*                         gConfigModes;                           // GWMConfigMode
+GList*                          gBindings;                              // GWMBinding
 
 // 定义全局 atoms
 #define GWM_ATOM_MACRO(atom) xcb_atom_t A_##atom;
@@ -373,7 +384,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    key_binding_translate_keymaps();
+    key_binding_translate_keysyms();
     key_binding_grab_all_keys (gConn);
 
     tree_init (geoReply);

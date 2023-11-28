@@ -14,36 +14,50 @@
 #include <pango/pango.h>
 #include <libsn/sn-launcher.h>
 
+typedef uint32_t                            GWMEventStateMask;
 
-typedef enum GapsMask                   GapsMask;                   // ok
-typedef enum Layout                     GWMLayout;                  // ok
-typedef enum Broder                     GWMBorder;                  // ok
-typedef enum MarkMode                   GWMMarkMode;                // ok
-typedef enum Adjacent                   GWMAdjacent;                // ok
-typedef enum Direction                  GWMDirection;               // ok
-typedef enum KillWindow                 GWMKillWindow;              // ok
-typedef enum Orientation                GWMOrientation;             // ok
-typedef enum BorderStyle                GWMBorderStyle;             // ok
-typedef enum FullScreenMode             GWMFullScreenMode;          // ok
-typedef enum Cursor                     GWMCursor;                  // ok
+typedef enum Layout                         GWMLayout;                  // ok
+typedef enum Broder                         GWMBorder;                  // ok
+typedef enum Cursor                         GWMCursor;                  // ok
+typedef enum GapsMask                       GWMGapsMask;                // ok
+typedef enum MarkMode                       GWMMarkMode;                // ok
+typedef enum Adjacent                       GWMAdjacent;                // ok
+typedef enum InputType                      GWMInputType;               // ok
+typedef enum Direction                      GWMDirection;               // ok
+typedef enum KillWindow                     GWMKillWindow;              // ok
+typedef enum Orientation                    GWMOrientation;             // ok
+typedef enum BorderStyle                    GWMBorderStyle;             // ok
+typedef enum XKBGroupMask                   GWMXKBGroupMask;            // ok
+typedef enum FullScreenMode                 GWMFullScreenMode;          // ok
 
-typedef struct Output                   GWMOutput;                  // ok
-typedef struct OutputName               GWMOutputName;              // ok
-typedef struct Gaps                     Gaps;                       // ok
-typedef struct Size                     Size;                       // ok
-typedef struct Rect                     GWMRect;                    // ok
-typedef struct Regex                    Regex;                      // ok
-typedef struct Match                    Match;                      // ok
-typedef struct Window                   GWMWindow;                  // ok
-typedef struct Font                     GWMFont;                    // ok
-typedef struct Color                    GWMColor;                   // ok
-typedef struct Surface                  GWMSurface;                 // ok
-typedef struct Assignment               Assignment;                 // ok
-typedef struct Container                GWMContainer;               // ok
-typedef struct ReserveEdgePixels        ReserveEdgePixels;          // ok
-typedef struct GWMStartupSequence       GWMStartupSequence;         // ok
-typedef struct DecorationRenderParams   GWMDecorationRenderParams;  // ok
+typedef struct Gaps                         GWMGaps;                    // ok
+typedef struct Size                         GWMSize;                    // ok
+typedef struct Rect                         GWMRect;                    // ok
+typedef struct Font                         GWMFont;                    // ok
+typedef struct Regex                        GWMRegex;                   // ok
+typedef struct Match                        GWMMatch;                   // ok
+typedef struct Color                        GWMColor;                   // ok
+typedef struct Output                       GWMOutput;                  // ok
+typedef struct Window                       GWMWindow;                  // ok
+typedef struct Surface                      GWMSurface;                 // ok
+typedef struct Binding                      GWMBinding;                 // ok
+typedef struct Container                    GWMContainer;               // ok
+typedef struct OutputName                   GWMOutputName;              // ok
+typedef struct Assignment                   GWMAssignment;              // ok
+typedef struct BindingKeycode               GWMBindingKeycode;          // ok
+typedef struct GWMStartupSequence           GWMStartupSequence;         // ok
+typedef struct ReserveEdgePixels            GWMReserveEdgePixels;       // ok
+typedef struct DecorationRenderParams       GWMDecorationRenderParams;  // ok
 
+typedef struct ConfigMode                   GWMConfigMode;              // ok
+typedef struct ConfigContext                GWMConfigContext;           // ok
+
+
+enum InputType
+{
+    B_KEYBOARD      = 0,
+    B_MOUSE         = 1,
+};
 
 enum MarkMode
 {
@@ -54,7 +68,7 @@ enum MarkMode
 enum Orientation
 {
     NO_ORIENTATION = 0,
-    HORIZ,
+    HORIZON,
     VERT
 };
 
@@ -71,6 +85,15 @@ enum BorderStyle
     BS_NONE         = 0,
     BS_PIXEL        = 1,
     BS_NORMAL       = 2,
+};
+
+enum XKBGroupMask
+{
+    GWM_XKB_GROUP_MASK_ANY  = 0,
+    GWM_XKB_GROUP_MASK_1    = (1 << 0),
+    GWM_XKB_GROUP_MASK_2    = (1 << 1),
+    GWM_XKB_GROUP_MASK_3    = (1 << 2),
+    GWM_XKB_GROUP_MASK_4    = (1 << 3)
 };
 
 enum FullScreenMode
@@ -180,6 +203,13 @@ struct Color
     uint32_t                    colorPixel;
 };
 
+struct BindingKeycode
+{
+    xcb_keycode_t               keycode;
+    GWMEventStateMask           modifiers;
+    GQueue                      keycodes;           // BindKeycode
+};
+
 struct ReserveEdgePixels
 {
     uint32_t                    left;
@@ -192,6 +222,31 @@ struct OutputName
 {
     char*                       name;
     GSList*                     names;              // OutputName
+};
+
+struct ConfigContext
+{
+    bool                        hasErrors;
+    bool                        hasWarnings;
+
+    int                         lineNumber;
+    char*                       lineCopy;
+    const char*                 filename;
+
+    char*                       compactError;
+
+    int                         firstColumn;
+    int                         lastColumn;
+};
+
+struct ConfigMode
+{
+    char*                       name;
+    bool                        pangoMarkup;
+    //struct bindings_head*       bindings;
+    GList*                      bindings;           // GWMBinding
+
+    GSList                      modes;              // ConfigMode
 };
 
 struct Output
@@ -244,8 +299,8 @@ struct DecorationRenderParams
 {
     struct Colortriple*         color;
     int                         borderStyle;
-    Size                        containerSize;
-    Size                        containerWindowSize;
+    GWMSize                     containerSize;
+    GWMSize                     containerWindowSize;
     GWMRect                     containerDecorationRect;
     GWMColor                    background;
     GWMLayout                   parentLayout;
@@ -256,14 +311,14 @@ struct Match
 {
     char*                       error;
 
-    Regex*                      mark;
-    Regex*                      title;
-    Regex*                      class;
-    Regex*                      machine;
-    Regex*                      instance;
-    Regex*                      workspace;
-    Regex*                      windowRole;
-    Regex*                      application;
+    GWMRegex*                   mark;
+    GWMRegex*                   title;
+    GWMRegex*                   class;
+    GWMRegex*                   machine;
+    GWMRegex*                   instance;
+    GWMRegex*                   workspace;
+    GWMRegex*                   windowRole;
+    GWMRegex*                   application;
 
     xcb_atom_t                  windowType;
     enum {
@@ -312,7 +367,7 @@ struct Assignment
         A_TO_OUTPUT             = (1 << 4),
     };
 
-    Match                       match;
+    GWMMatch                    match;
 
     union {
         char*       command;
@@ -322,13 +377,34 @@ struct Assignment
     GQueue                      assignments;
 };
 
+struct Binding
+{
+    GWMInputType                inputType;
+
+    enum {
+        B_UPON_KEYPRESS = 0,                            // This binding will only be executed upon KeyPress events
+        B_UPON_KEYRELEASE = 1,                          // This binding will be executed either upon a KeyRelease event, or…
+        B_UPON_KEYRELEASE_IGNORE_MODS = 2,
+    } release;
+
+    bool                        border;
+    bool                        wholeWindow;
+    bool                        excludeTitleBar;
+    uint32_t                    keycode;
+    GWMEventStateMask           eventStateMask;
+    char*                       symbol;
+    char*                       command;
+    GQueue                      keycodesHead;           // GWMBindingKeycode
+    GQueue                      bindings;               // GWMBinding
+};
+
 struct Window
 {
     xcb_window_t                id;
     xcb_window_t                leader;                 // 保存leader窗口(工具窗口和类似浮动窗口的逻辑父窗口)ID
     xcb_window_t                transientFor;           //
     uint32_t                    nrAssignments;          // 指向已经在此窗口运行过的赋值的指针(赋值只运行一次)
-    Assignment**                ranAssignments;         //
+    GWMAssignment**             ranAssignments;         //
 
     char*                       classClass;
     char*                       classInstance;
@@ -348,7 +424,7 @@ struct Window
         W_DOCK_BOTTOM   =2,
     } dock;
     struct timeval              urgent;                 // Window何时被标记为紧急? 0表示不紧急
-    ReserveEdgePixels           reserved;               //
+    GWMReserveEdgePixels        reserved;               //
 
     uint16_t                    depth;
 
@@ -411,7 +487,7 @@ struct Container
     } type;
 
     int                         workspaceNum;
-    Gaps                        gaps;
+    GWMGaps                     gaps;
     GWMContainer*               parent;
     GWMRect                     rect;
     GWMRect                     windowRect;

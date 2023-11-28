@@ -9,6 +9,9 @@
 #include "xmacro-atoms_NET-SUPPORTED.h"
 
 
+extern bool                             gXKBSupported;
+extern bool                             gShapeSupported;
+
 extern int                              gXKBBase;
 extern int                              gRandrBase;
 extern int                              gShapeBase;
@@ -24,6 +27,14 @@ extern xcb_screen_t*                    gRootScreen;
 extern xcb_timestamp_t                  gLastTimestamp;
 extern GWMContainer*                    gContainerRoot;
 extern xcb_atom_t                       gExtendWMHintsWindow;
+
+extern GSList*                          gConfigModes;                   // GWMConfigMode
+extern GList*                           gBindings;                      // GWMBinding
+extern unsigned int                     gXCBNumLockMask;
+extern GQueue                           gAllContainer;                  // GWMContainer
+
+extern char*                            gCurConfigPath;
+extern const char*                      gCurrentBindingMode;
 
 
 // atom declare

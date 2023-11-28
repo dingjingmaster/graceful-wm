@@ -83,10 +83,10 @@ bool container_find_transient_for_window(GWMContainer* start, xcb_window_t targe
 GWMContainer* container_descend_direction(GWMContainer* con, GWMDirection direction);
 void container_enable_full_screen(GWMContainer* con, GWMFullScreenMode fullScreenMode);
 void container_move_to_output(GWMContainer* con, GWMOutput* output, bool fixCoordinates);
-GWMContainer* container_for_window(GWMContainer* con, GWMWindow* window, Match** storeMatch);
 bool container_move_to_output_name(GWMContainer* con, const char* name, bool fixCoordinates);
 GWMContainer* container_parent_with_orientation(GWMContainer* con, GWMOrientation orientation);
 void container_set_border_style(GWMContainer* con, GWMBorderStyle borderStyle, int borderWidth);
+GWMContainer* container_for_window(GWMContainer* con, GWMWindow* window, GWMMatch** storeMatch);
 GWMContainer* container_get_full_screen_con(GWMContainer* con, GWMFullScreenMode fullScreenMode);
 void container_move_to_workspace(GWMContainer*con, GWMContainer* workspace, bool fixCoordinates, bool doNotWarp, bool ignoreFocus);
 

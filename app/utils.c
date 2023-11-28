@@ -65,4 +65,16 @@ uint32_t util_get_mod_mask_for(uint32_t keySym, xcb_key_symbols_t *symbols, xcb_
     return 0;
 }
 
+bool util_parse_long(const char *str, long *out, int base)
+{
+    char *end = NULL;
+    long result = strtol(str, &end, base);
+    if (result == LONG_MIN || result == LONG_MAX || result < 0 || (end != NULL && *end != '\0')) {
+        *out = result;
+        return false;
+    }
 
+    *out = result;
+
+    return true;
+}

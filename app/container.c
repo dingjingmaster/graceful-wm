@@ -351,7 +351,7 @@ void container_move_to_output(GWMContainer *con, GWMOutput *output, bool fixCoor
 
 }
 
-GWMContainer *container_for_window(GWMContainer *con, GWMWindow *window, Match **storeMatch)
+GWMContainer *container_for_window(GWMContainer *con, GWMWindow *window, GWMMatch **storeMatch)
 {
     return NULL;
 }
