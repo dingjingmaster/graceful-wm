@@ -46,7 +46,6 @@ void extend_wm_hint_setup_hint(void)
 
 void extend_wm_hint_update_desktop_properties(void)
 {
-    // FIXME://
     extend_wm_hint_update_number_of_desktops();
     extend_wm_hint_update_desktop_viewport();
     extend_wm_hint_update_current_desktop();

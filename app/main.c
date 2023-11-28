@@ -366,7 +366,7 @@ int main(int argc, char* argv[])
 
     gKeySymbols = xcb_key_symbols_alloc (gConn);
 
-    gXCBNubLockMask = (int) util_get_mod_mask_for ((uint32_t) XCB_NUM_LOCK, gKeySymbols);
+    gXCBNubLockMask = (int) util_aio_get_mod_mask_for ((uint32_t) XCB_NUM_LOCK, gKeySymbols);
 
     if (!key_binding_load_keymap()) {
         ERROR(_("Could not load keymap"));
