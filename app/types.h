@@ -10,6 +10,8 @@
 #include <xcb/xcb.h>
 #include <xcb/shape.h>
 #include <xcb/randr.h>
+#include <xcb/xcb_icccm.h>
+
 #include <cairo/cairo.h>
 #include <pango/pango.h>
 #include <libsn/sn-launcher.h>
@@ -19,6 +21,7 @@ typedef uint32_t                            GWMEventStateMask;
 typedef enum Layout                         GWMLayout;                  // ok
 typedef enum Broder                         GWMBorder;                  // ok
 typedef enum Cursor                         GWMCursor;                  // ok
+typedef enum Position                       GWMPosition;                // ok
 typedef enum GapsMask                       GWMGapsMask;                // ok
 typedef enum MarkMode                       GWMMarkMode;                // ok
 typedef enum Adjacent                       GWMAdjacent;                // ok
@@ -28,6 +31,7 @@ typedef enum KillWindow                     GWMKillWindow;              // ok
 typedef enum Orientation                    GWMOrientation;             // ok
 typedef enum BorderStyle                    GWMBorderStyle;             // ok
 typedef enum XKBGroupMask                   GWMXKBGroupMask;            // ok
+typedef enum OutputCloseFar                 GWMOutputCloseFar;          // ok
 typedef enum FullScreenMode                 GWMFullScreenMode;          // ok
 
 typedef struct Gaps                         GWMGaps;                    // ok
@@ -52,6 +56,11 @@ typedef struct DecorationRenderParams       GWMDecorationRenderParams;  // ok
 typedef struct ConfigMode                   GWMConfigMode;              // ok
 typedef struct ConfigContext                GWMConfigContext;           // ok
 
+enum OutputCloseFar
+{
+    CLOSEST_OUTPUT = 0,
+    FARTHEST_OUTPUT = 1
+};
 
 enum InputType
 {
@@ -70,6 +79,12 @@ enum Orientation
     NO_ORIENTATION = 0,
     HORIZON,
     VERT
+};
+
+enum Position
+{
+    BEFORE,
+    AFTER
 };
 
 enum Direction
@@ -538,7 +553,7 @@ struct Container
     GQueue                      floatingWindows;
 
     // callbacks
-    void (*OnRemoveChild) (GWMContainer*);
+    void (*onRemoveChild) (GWMContainer*);
 
     enum {
         SCRATCHPAD_NONE     = 0,

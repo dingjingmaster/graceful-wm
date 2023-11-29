@@ -13,3 +13,13 @@ GWMOutput *randr_get_first_output(void)
 {
     return NULL;
 }
+
+void randr_init(int *eventBase, bool disableRandr15)
+{
+
+}
+
+GWMOutput *randr_get_output_next(GWMDirection direction, GWMOutput *current, GWMOutputCloseFar closeFar)
+{
+    return NULL;
+}

@@ -8,3 +8,8 @@ void restore_connect(void)
 {
 
 }
+
+void restore_open_placeholder_windows(GWMContainer *parent)
+{
+
+}
