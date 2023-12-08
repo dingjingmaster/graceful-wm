@@ -22,6 +22,7 @@ bool container_is_split(GWMContainer* con);
 void container_activate(GWMContainer* con);
 bool container_is_sticky(GWMContainer* con);
 bool container_is_docked(GWMContainer* con);
+bool container_is_hidden(GWMContainer* con);
 int container_num_windows(GWMContainer* con);
 int container_border_style(GWMContainer*con);
 void container_fix_percent(GWMContainer* con);

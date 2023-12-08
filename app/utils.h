@@ -16,16 +16,16 @@
 #include <xcb/xinerama.h>
 #include <xcb/xcb_keysyms.h>
 
+#include "types.h"
 
-#define FREE(x)         \
-{                       \
-    if (x) free (x);    \
-    x = NULL;           \
-}
 
 #define CALL(obj, member, ...) obj->member(obj, ##__VA_ARGS__)
 
-
+GWMRect util_rect_add(GWMRect a, GWMRect b);
+GWMRect util_rect_sub(GWMRect a, GWMRect b);
+bool util_rect_equals(GWMRect a, GWMRect b);
+GWMRect util_rect_sanitize_dimensions(GWMRect rect);
+bool util_rect_contains(GWMRect rect, uint32_t x, uint32_t y);
 
 bool util_path_exists(const char *path);
 char* util_resolve_tilde(const char *path);

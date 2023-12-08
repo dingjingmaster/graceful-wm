@@ -90,7 +90,7 @@ GWMContainer*                   gContainerRoot = NULL;
 GWMContainer*                   gFocused = NULL;
 GWMColorPixel*                  gColorPixels = NULL;
 
-GQueue                          gAllContainer;                          // GWMContainer
+GWMAllContainerHead             gAllContainer = TAILQ_HEAD_INITIALIZER(gAllContainer);
 
 GSList*                         gConfigModes;                           // GWMConfigMode
 GList*                          gBindings;                              // GWMBinding

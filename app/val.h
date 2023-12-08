@@ -35,7 +35,7 @@ extern xcb_atom_t                       gExtendWMHintsWindow;
 extern GSList*                          gConfigModes;                   // GWMConfigMode
 extern GList*                           gBindings;                      // GWMBinding
 extern unsigned int                     gXCBNumLockMask;
-extern GQueue                           gAllContainer;                  // GWMContainer
+extern GWMAllContainerHead              gAllContainer;
 
 extern char*                            gCurConfigPath;
 extern const char*                      gCurrentBindingMode;

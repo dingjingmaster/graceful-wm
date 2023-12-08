@@ -15,9 +15,9 @@ GWMContainer *output_get_content(GWMContainer *output)
 {
     g_return_val_if_fail(output, NULL);
 
-    for (GList* ls = output->nodesHead.head; ls; ls = ls->next) {
-        GWMContainer* child = (GWMContainer*) ls->data;
-        if (CT_CON == child->type) {
+    GWMContainer* child = NULL;
+    TAILQ_FOREACH (child, &(output->nodesHead), nodes) {
+        if (child->type == CT_CON) {
             return child;
         }
     }
@@ -32,9 +32,9 @@ char *output_primary_name(GWMOutput *output)
 
 void output_push_sticky_windows(GWMContainer *oldFocus)
 {
-    for (GList* ls = gContainerRoot->focusHead.head; ls; ls = ls->next) {
-        GWMContainer* output = ls->data;
-        GWMContainer* workspace, *visible_ws = NULL;
+//    for (GList* ls = gContainerRoot->focusHead.head; ls; ls = ls->next) {
+//        GWMContainer* output = ls->data;
+//        GWMContainer* workspace, *visible_ws = NULL;
 //        GREP_FIRST(visible_ws, output_get_content(output), workspace_is_visible(child));
 //
 //        /* We use this loop instead of TAILQ_FOREACH to avoid problems if the
@@ -67,7 +67,7 @@ void output_push_sticky_windows(GWMContainer *oldFocus)
 //                }
 //            }
 //        }
-    }
+//    }
 }
 
 GWMOutput *output_get_output_for_con(GWMContainer *con)

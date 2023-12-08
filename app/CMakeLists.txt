@@ -5,7 +5,8 @@ include(${CMAKE_SOURCE_DIR}/common/common.cmake)
 file(GLOB APP_MAIN *.h *.c)
 
 add_executable(graceful-wm main.c
-        ${COMMON_SRC} ${APP_MAIN})
+        ${COMMON_SRC} ${APP_MAIN}
+)
 
 target_link_libraries(graceful-wm
         ${LIBS}

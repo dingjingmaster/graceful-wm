@@ -157,3 +157,31 @@ ssize_t util_slurp(const char *path, char **buf)
 
     return (ssize_t)n;
 }
+
+GWMRect util_rect_add(GWMRect a, GWMRect b)
+{
+    GWMRect result;
+    return result;
+}
+
+GWMRect util_rect_sub(GWMRect a, GWMRect b)
+{
+    GWMRect result;
+    return result;
+}
+
+bool util_rect_equals(GWMRect a, GWMRect b)
+{
+    return 0;
+}
+
+GWMRect util_rect_sanitize_dimensions(GWMRect rect)
+{
+    GWMRect result;
+    return result;
+}
+
+bool util_rect_contains(GWMRect rect, uint32_t x, uint32_t y)
+{
+    return 0;
+}

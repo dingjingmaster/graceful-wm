@@ -16,10 +16,16 @@
 #include "xmacro-atoms_NET-SUPPORTED.h"
 
 
+#define FOREACH_NONINTERNAL \
+    TAILQ_FOREACH (output, &(gContainerRoot->nodesHead), nodes) \
+        TAILQ_FOREACH (ws, &(output_get_content(output)->nodesHead), nodes) \
+            if (!container_is_internal(ws))
+
+
 static void extend_wm_hint_update_desktop_names();
 static void extend_wm_hint_update_desktop_viewport(void);
 static void extend_wm_hint_update_number_of_desktops(void);
-static void extend_wm_hint_wm_desktop_recursively (GWMContainer* con, uint32_t desktop);
+static void extend_wm_hint_update_wm_desktop_recursively (GWMContainer* con, uint32_t desktop);
 
 
 void extend_wm_hint_setup_hint(void)
@@ -72,12 +78,10 @@ void extend_wm_hint_update_wm_desktop(void)
     uint32_t desktop = 0;
 
     GWMContainer* output = NULL;
-    GWMContainer* workspace = NULL;
-    for (GList* ls = gContainerRoot->nodesHead.head; ls; ls = ls->next) {
-        output = ls->data;
-        for (GList* lsW = output_get_content (output)->nodesHead.head; lsW; lsW = lsW->next) {
-            workspace = lsW->data;
-            extend_wm_hint_wm_desktop_recursively(workspace, desktop);
+    TAILQ_FOREACH (output, &(gContainerRoot->nodesHead), nodes) {
+        GWMContainer* workspace;
+        TAILQ_FOREACH (workspace, &(output_get_content(output)->nodesHead), nodes) {
+            extend_wm_hint_update_wm_desktop_recursively(workspace, desktop);
             if (!container_is_internal(workspace)) {
                 ++desktop;
             }
@@ -146,17 +150,11 @@ uint32_t extend_wm_hint_get_workspace_index(GWMContainer *con)
     GWMContainer* output = NULL;
     GWMContainer* targetWorkspace = container_get_workspace (con);
 
-    for (GList* lsOutput = gContainerRoot->nodesHead.head; lsOutput; lsOutput = lsOutput->next) {
-        output = lsOutput->data;
-        for (GList* lsWS = output_get_content (output)->nodesHead.head; lsWS; lsWS = lsWS->next) {
-            ws = lsWS->data;
-            if (!container_is_internal (ws)) {
-                if (targetWorkspace == ws) {
-                    return idx;
-                }
-            }
-            ++idx;
+    FOREACH_NONINTERNAL {
+        if (ws == targetWorkspace) {
+            return idx;
         }
+        idx++;
     }
 
     return NET_WM_DESKTOP_NONE;
@@ -172,36 +170,29 @@ GWMContainer* extend_wm_hint_get_workspace_by_index(uint32_t idx)
     GWMContainer* ws = NULL;
     GWMContainer* output = NULL;
 
-    for (GList* lsOutput = gContainerRoot->nodesHead.head; lsOutput; lsOutput = lsOutput->next) {
-        output = lsOutput->data;
-        for (GList* lsWS = output_get_content (output)->nodesHead.head; lsWS; lsWS = lsWS->next) {
-            ws = lsWS->data;
-            if (!container_is_internal (ws)) {
-                if (idx == currentIdx) {
-                    return ws;
-                }
-            }
-            ++currentIdx;
+    FOREACH_NONINTERNAL {
+        if (currentIdx == idx) {
+            return ws;
         }
+        currentIdx++;
     }
 
     return NULL;
 }
 
 
-static void extend_wm_hint_wm_desktop_recursively (GWMContainer* con, uint32_t desktop)
+static void extend_wm_hint_update_wm_desktop_recursively (GWMContainer* con, uint32_t desktop)
 {
     GWMContainer* child = NULL;
 
-    for (GList* ls = con->nodesHead.head; ls; ls = ls->next) {
-        child = ls->data;
-        extend_wm_hint_wm_desktop_recursively(child, desktop);
+    TAILQ_FOREACH (child, &(con->nodesHead), nodes) {
+        extend_wm_hint_update_wm_desktop_recursively(child, desktop);
     }
 
+    /* If con is a workspace, we also need to go through the floating windows on it. */
     if (con->type == CT_WORKSPACE) {
-        for (GList* ls = con->floatingHead.head; ls; ls = ls->next) {
-            child = ls->data;
-            extend_wm_hint_wm_desktop_recursively(child, desktop);
+        TAILQ_FOREACH (child, &(con->floatingHead), floatingWindows) {
+            extend_wm_hint_update_wm_desktop_recursively(child, desktop);
         }
     }
 
@@ -241,24 +232,16 @@ static void extend_wm_hint_update_desktop_viewport(void)
     GWMContainer* ws = NULL;
     GWMContainer* output = NULL;
 
-    for (GList* ls1 = gContainerRoot->nodesHead.head; ls1; ls1 = ls1->next) {
-        output = ls1->data;
-        for (GList* ls2 = output_get_content (output)->nodesHead.head; ls2; ls2 = ls2->next) {
-            ws = ls2->data;
-            ++numDesktops;
-        }
+    FOREACH_NONINTERNAL {
+        numDesktops++;
     }
 
     uint32_t viewports[numDesktops * 2];
 
     int currentPosition = 0;
-    for (GList* ls1 = gContainerRoot->nodesHead.head; ls1; ls1 = ls1->next) {
-        output = ls1->data;
-        for (GList *ls2 = output_get_content (output)->nodesHead.head; ls2; ls2 = ls2->next) {
-            ws = ls2->data;
-            viewports[currentPosition++] = output->rect.x;
-            viewports[currentPosition++] = output->rect.y;
-        }
+    FOREACH_NONINTERNAL {
+        viewports[currentPosition++] = output->rect.x;
+        viewports[currentPosition++] = output->rect.y;
     }
 
     xcb_change_property(gConn, XCB_PROP_MODE_REPLACE, gRoot, A__NET_DESKTOP_VIEWPORT, XCB_ATOM_CARDINAL, 32, currentPosition, &viewports);
@@ -271,15 +254,9 @@ static void extend_wm_hint_update_number_of_desktops(void)
     GWMContainer* ws = NULL;
     GWMContainer* output = NULL;
 
-    for (GList* ls1 = gContainerRoot->nodesHead.head; ls1; ls1 = ls1->next) {
-        output = ls1->data;
-        for (GList* ls2 = output_get_content (output)->nodesHead.head; ls2; ls2 = ls2->next) {
-            ws = ls2->data;
-            if (!container_is_internal (ws)) {
-                ++idx;
-            }
-        }
-    }
+    FOREACH_NONINTERNAL {
+        idx++;
+    };
 
     if (idx == oldIdx) {
         return;
@@ -295,25 +272,18 @@ static void extend_wm_hint_update_desktop_names()
     GWMContainer* ws = NULL;
     GWMContainer* output = NULL;
 
-    for (GList* ls1 = gContainerRoot->nodesHead.head; ls1; ls1 = ls1->next) {
-        output = ls1->data;
-        for (GList *ls2 = output_get_content (output)->nodesHead.head; ls2; ls2 = ls2->next) {
-            ws = ls2->data;
-            msgLen += strlen (ws->name) + 1;
-        };
-    }
+    FOREACH_NONINTERNAL {
+        msgLen += strlen(ws->name) + 1;
+    };
+
 
     char desktopNames[msgLen];
     int currentPosition = 0;
 
     /* fill the buffer with the names of the i3 workspaces */
-    for (GList* ls1 = gContainerRoot->nodesHead.head; ls1; ls1 = ls1->next) {
-        output = ls1->data;
-        for (GList *ls2 = output_get_content (output)->nodesHead.head; ls2; ls2 = ls2->next) {
-            ws = ls2->data;
-            for (size_t i = 0; i < strlen (ws->name) + 1; i++) {
-                desktopNames[currentPosition++] = ws->name[i];
-            }
+    FOREACH_NONINTERNAL {
+        for (size_t i = 0; i < strlen(ws->name) + 1; i++) {
+            desktopNames[currentPosition++] = ws->name[i];
         }
     }
 

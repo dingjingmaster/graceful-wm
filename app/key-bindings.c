@@ -385,7 +385,7 @@ void key_binding_regrab_all_buttons(xcb_connection_t *conn)
     xcb_grab_server(conn);
 
     GWMContainer* con;
-    for (GList* ls = gAllContainer.head; ls; ls = ls->next) {
+    TAILQ_FOREACH (con, &gAllContainer, allContainers) {
         if (con->window == NULL) {
             continue;
         }

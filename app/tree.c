@@ -84,25 +84,19 @@ bool tree_level_up(void)
 
 bool tree_level_down(void)
 {
-    /* Go down the focus stack of the current node */
-    GWMContainer* next = gFocused->focusHead.head->data;// TAILQ_FIRST(&(focused->focus_head));
-    if (next == gFocused->focusHead.tail->data) {
-//    if (next == TAILQ_END(&(focused->focus_head))) {
+    GWMContainer* next = TAILQ_FIRST(&(gFocused->focusHead));
+    if (next == TAILQ_END(&(focused->focus_head))) {
         DEBUG(_("cannot go down"));
         return false;
     }
     else if (next->type == CT_FLOATING_CON) {
-        /* Floating cons shouldn't be directly focused; try immediately
-         * going to the grandchild of the focused con. */
-        GWMContainer* child = next->focusHead.head->data;//TAILQ_FIRST(&(next->focus_head));
-        if (child == next->focusHead.tail->data) {
-//        if (child == TAILQ_END(&(next->focus_head))) {
+        GWMContainer* child = TAILQ_FIRST(&(next->focusHead));
+        if (child == TAILQ_END(&(next->focus_head))) {
             DEBUG(_("cannot go down"));
             return false;
         }
         else {
-//            next = TAILQ_FIRST(&(next->focus_head));
-            next = (next->focusHead.head->data);
+            next = TAILQ_FIRST(&(next->focusHead));
         }
     }
 
@@ -212,31 +206,23 @@ bool tree_restore(const char *path, xcb_get_geometry_reply_t *geometry)
     tree_append_json(gFocused, buf, len, NULL);
 
     DEBUG(_("appended tree, using new root"));
-    if (!gContainerRoot->nodesHead.head) {
-        /* tree_append_json failed. Continuing here would segfault. */
+    gContainerRoot = TAILQ_FIRST(&(gContainerRoot->nodesHead));
+    if (!gContainerRoot) {
         goto out;
     }
     DEBUG(_("new root = %p"), gContainerRoot);
-    GWMContainer* out = gContainerRoot->nodesHead.head;
+    GWMContainer* out = TAILQ_FIRST(&(gContainerRoot->nodesHead));
     DEBUG(_("out = %p"), out);
-    GWMContainer* ws = gContainerRoot->nodesHead.tail;
+    GWMContainer* ws = TAILQ_FIRST(&(out->nodesHead));
     DEBUG(_("ws = %p"), ws);
 
     /* For in-place restarting into v4.2, we need to make sure the new
      * pseudo-output __i3 is present. */
-    if (0 != g_strcmp0(out->name, "__gwm")) {
+    if (strcmp(out->name, "__gwm") != 0) {
         DEBUG(_("Adding pseudo-output __gwm during inplace restart"));
         GWMContainer* __gwm = _create___gwm();
-        /* Ensure that it is the first output, other places in the code make
-         * that assumption. */
-
-        g_queue_push_tail (&(gContainerRoot->nodes), __gwm);
-
-//        gContainerRoot->nodes;
-//        GList g_queue_find ()
-
-//        TAILQ_REMOVE(&(croot->nodes_head), __gwm, nodes);
-//        TAILQ_INSERT_HEAD(&(croot->nodes_head), __gwm, nodes);
+        TAILQ_REMOVE(&(gContainerRoot->nodesHead), __gwm, nodes);
+        TAILQ_INSERT_HEAD(&(gContainerRoot->nodesHead), __gwm, nodes);
     }
 
     restore_open_placeholder_windows(gContainerRoot);
@@ -305,11 +291,8 @@ bool tree_close_internal(GWMContainer *con, GWMKillWindow killWindow, bool doNot
     bool abort_kill = false;
     /* We cannot use TAILQ_FOREACH because the children get deleted
      * in their parent’s nodes_head */
-    for (GList* ls = con->nodesHead.head; ls; ls = ls->next) {
-        child = ls->data;
-        nextChild = ls->next->data;
-//    for (child = TAILQ_FIRST(&(con->nodes_head)); child;) {
-//        nextchild = TAILQ_NEXT(child, nodes);
+    for (child = TAILQ_FIRST(&(con->nodesHead)); child;) {
+        nextChild = TAILQ_NEXT(child, nodes);
         DEBUG(_("killing child=%p"), child);
         if (!tree_close_internal(child, killWindow, true)) {
             abort_kill = true;
@@ -477,17 +460,11 @@ static void mark_unmapped(GWMContainer* con)
     GWMContainer* current = NULL;
 
     con->mapped = false;
-    for (GList* ls = con->nodesHead.head; ls; ls = ls->next) {
-        current = ls->data;
+    TAILQ_FOREACH (current, &(con->nodesHead), nodes) {
         mark_unmapped(current);
     }
-
     if (con->type == CT_WORKSPACE) {
-        /* We need to call mark_unmapped on floating nodes as well since we can
-         * make containers floating. */
-//        TAILQ_FOREACH (current, &(con->floating_head), floating_windows) {
-        for (GList* ls = con->floatingHead.head; ls; ls = ls->next) {
-            current = ls->data;
+        TAILQ_FOREACH (current, &(con->floatingHead), floatingWindows) {
             mark_unmapped(current);
         }
     }
@@ -500,8 +477,6 @@ static GWMContainer* get_tree_next_workspace(GWMContainer* con, GWMDirection dir
         return NULL;
     }
 
-    // Use the center of the container instead of the left/top edges, to make
-    // this work with negative gaps. See https://github.com/i3/i3/issues/5293
     const uint32_t x = con->rect.x + (con->rect.width / 2);
     const uint32_t y = con->rect.y + (con->rect.height / 2);
     GWMOutput* currentOutput = randr_get_output_containing(x, y);
@@ -516,17 +491,8 @@ static GWMContainer* get_tree_next_workspace(GWMContainer* con, GWMDirection dir
     }
     DEBUG(_("Next output is %s"), output_primary_name(nextOutput));
 
-    /* Find visible workspace on next output */
     GWMContainer* workspace = NULL;
-
-    for (GList* ls = output_get_content (nextOutput->container)->nodesHead.head; ls; ls = ls->next) {
-        GWMContainer* child = ls->data;
-        if (!workspace_is_visible (child)) {
-            continue;
-        }
-        workspace = child;
-        break;
-    }
+    GREP_FIRST(workspace, output_get_content(nextOutput->container), workspace_is_visible(child));
 
     return workspace;
 }
