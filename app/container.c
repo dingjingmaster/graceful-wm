@@ -943,11 +943,11 @@ void container_set_layout(GWMContainer *con, GWMLayout layout)
                 container_attach(child, new, true);
             }
 
-            set_focus_order(new, focus_order);
+            container_set_focus_order(new, focus_order);
             free(focus_order);
 
             /* 4: attach the new split container to the workspace */
-            DLOG(_("Attaching new split to ws"));
+            DEBUG(_("Attaching new split to ws"));
             container_attach(new, con, false);
 
             tree_flatten(gContainerRoot);

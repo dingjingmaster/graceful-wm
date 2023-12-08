@@ -6,6 +6,8 @@ file(GLOB APP_MAIN *.h *.c)
 
 add_executable(graceful-wm main.c
         ${COMMON_SRC} ${APP_MAIN}
+        regex.c
+        regex.h
 )
 
 target_link_libraries(graceful-wm
