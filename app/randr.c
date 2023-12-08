@@ -23,3 +23,13 @@ GWMOutput *randr_get_output_next(GWMDirection direction, GWMOutput *current, GWM
 {
     return NULL;
 }
+
+GWMOutput *randr_get_output_next_wrap(GWMDirection direction, GWMOutput *current)
+{
+    return NULL;
+}
+
+GWMOutput *randr_get_output_by_name(const char *name, bool requireActive)
+{
+    return NULL;
+}

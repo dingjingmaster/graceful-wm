@@ -8,5 +8,4 @@
 
 void render_container(GWMContainer* con);
 
-
 #endif //GRACEFUL_WM_RENDER_H

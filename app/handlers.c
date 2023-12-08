@@ -106,7 +106,7 @@ bool handler_event_is_ignored(int sequence, int responseType)
 
 void handler_handle_event(int type, xcb_generic_event_t *event)
 {
-
+    DEBUG("handle event: %d", type);
 }
 
 static bool handler_handle_window_name_change(GWMContainer* con, xcb_get_property_reply_t *prop)

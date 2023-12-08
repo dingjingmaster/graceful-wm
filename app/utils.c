@@ -19,7 +19,7 @@
 #include "val.h"
 
 
-xcb_visualtype_t *get_visual_type(xcb_screen_t *screen)
+xcb_visualtype_t* util_get_visual_type(xcb_screen_t *screen)
 {
     for (xcb_depth_iterator_t it = xcb_screen_allowed_depths_iterator(screen); it.rem; xcb_depth_next(&it)) {
         for (struct xcb_visualtype_iterator_t vit = xcb_depth_visuals_iterator(it.data); vit.rem; xcb_visualtype_next(&vit)) {

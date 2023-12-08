@@ -87,7 +87,8 @@ xcb_screen_t*                   gRootScreen = NULL;
 const char*                     gLogPath = "/tmp/graceful-wm.log";
 static struct ev_prepare*       gXcbPrepare = NULL;
 GWMContainer*                   gContainerRoot = NULL;
-GWMContainer*                   gFocused;
+GWMContainer*                   gFocused = NULL;
+GWMColorPixel*                  gColorPixels = NULL;
 
 GQueue                          gAllContainer;                          // GWMContainer
 
@@ -152,13 +153,11 @@ int main(int argc, char* argv[])
     // 获取 x11 扩展
     xcb_prefetch_extension_data (gConn, &xcb_xkb_id);
     xcb_prefetch_extension_data (gConn, &xcb_shape_id);
+    xcb_prefetch_extension_data (gConn, &xcb_xinerama_id);              // FIXME://强制支持多显示器
     xcb_prefetch_extension_data (gConn, &xcb_big_requests_id);
 
-    // FIXME://强制支持多显示器
-    xcb_prefetch_extension_data (gConn, &xcb_xinerama_id);
-
     // 准备获取当前时间戳
-    xcb_change_window_attributes (gConn, gRoot, XCB_CW_EVENT_MASK, (uint32_t[]){XCB_EVENT_MASK_PROPERTY_CHANGE});
+    xcb_change_window_attributes (gConn, gRoot, XCB_CW_EVENT_MASK, (uint32_t[]){XCB_EVENT_MASK_PROPERTY_CHANGE});       //
     xcb_change_property (gConn, XCB_PROP_MODE_APPEND, gRoot, XCB_ATOM_SUPERSCRIPT_X, XCB_ATOM_CARDINAL, 32, 0, "");
 
 #define GWM_ATOM_MACRO(atom) \
@@ -181,20 +180,19 @@ int main(int argc, char* argv[])
         }
     }
     else {
-        gVisualType = get_visual_type (gRootScreen);
+        gVisualType = util_get_visual_type (gRootScreen);
     }
 
     xcb_prefetch_maximum_request_length (gConn);
 
     dpi_init();
 
-    DEBUG(_("\n"
-          "root_depth = %d, visual_id = 0x%08x.\n"
-          "root_screen->height_in_pixels = %d, root_screen->height_in_millimeters = %d\n"
-          "One logical pixel corresponds to %d physical pixel on this display.\n"),
-          gRootDepth, gVisualType->visual_id,
-          gRootScreen->height_in_pixels, gRootScreen->height_in_millimeters,
-          dpi_logical_px(1))
+    DEBUG(_("\nroot_depth = %d, visual_id = 0x%08x.\n"
+            "root_screen->height_in_pixels = %d, root_screen->height_in_millimeters = %d\n"
+            "One logical pixel corresponds to %d physical pixel on this display.\n"),
+            gRootDepth, gVisualType->visual_id,
+            gRootScreen->height_in_pixels, gRootScreen->height_in_millimeters,
+            dpi_logical_px(1))
 
     xcb_get_geometry_cookie_t geoCookie = xcb_get_geometry (gConn, gRoot);
     xcb_query_pointer_cookie_t geoPointerCookie = xcb_query_pointer (gConn, gRoot);
@@ -253,7 +251,7 @@ int main(int argc, char* argv[])
         free (atomReply);
 
         // check if the selection is already owned
-        xcb_get_selection_owner_reply_t* selectionReply = xcb_get_selection_owner_reply (gConn, xcb_get_selection_owner (gConn, gWMSn), NULL);
+        xcb_get_selection_owner_reply_t* selectionReply = NULL;//xcb_get_selection_owner_reply (gConn, xcb_get_selection_owner (gConn, gWMSn), NULL);
         if (selectionReply && XCB_NONE != selectionReply->owner && !command_line_get_is_replace()) {
             ERROR(_("Another window manager is already running (WM_Sn is owned)"));
             printf (_("Another window manager is already running (WM_Sn is owned)"));
@@ -327,13 +325,11 @@ int main(int argc, char* argv[])
         DEBUG(_("initializing xcb-xkb"));
         xcb_xkb_use_extension (gConn, XCB_XKB_MAJOR_VERSION, XCB_XKB_MINOR_VERSION);
         xcb_xkb_select_events (gConn, XCB_XKB_ID_USE_CORE_KBD,
-                               XCB_XKB_EVENT_TYPE_STATE_NOTIFY | XCB_XKB_EVENT_TYPE_MAP_NOTIFY | XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY,
-                               0,
-                               XCB_XKB_EVENT_TYPE_STATE_NOTIFY | XCB_XKB_EVENT_TYPE_MAP_NOTIFY | XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY,
-                               0xFF, 0xFF, NULL);
-        const uint32_t mask = XCB_XKB_PER_CLIENT_FLAG_GRABS_USE_XKB_STATE
-                            | XCB_XKB_PER_CLIENT_FLAG_LOOKUP_STATE_WHEN_GRABBED
-                            | XCB_XKB_PER_CLIENT_FLAG_DETECTABLE_AUTO_REPEAT;
+                                XCB_XKB_EVENT_TYPE_STATE_NOTIFY | XCB_XKB_EVENT_TYPE_MAP_NOTIFY | XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY,
+                                0,
+                                XCB_XKB_EVENT_TYPE_STATE_NOTIFY | XCB_XKB_EVENT_TYPE_MAP_NOTIFY | XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY,
+                                0xFF, 0xFF, NULL);
+        const uint32_t mask = XCB_XKB_PER_CLIENT_FLAG_GRABS_USE_XKB_STATE | XCB_XKB_PER_CLIENT_FLAG_LOOKUP_STATE_WHEN_GRABBED | XCB_XKB_PER_CLIENT_FLAG_DETECTABLE_AUTO_REPEAT;
         xcb_xkb_per_client_flags_reply_t* pcfReply = xcb_xkb_per_client_flags_reply (gConn, xcb_xkb_per_client_flags (gConn, XCB_XKB_ID_USE_CORE_KBD, mask, mask, 0, 0, 0), NULL);
 
 #define PCF_REPLY_ERROR(_val)                                       \
@@ -387,11 +383,13 @@ int main(int argc, char* argv[])
     key_binding_translate_keysyms();
     key_binding_grab_all_keys (gConn);
 
+    DEBUG("start tree init");
     tree_init (geoReply);
     free (geoReply);
+    DEBUG("end tree init!");
 
-    xinerama_init();
-
+//    xinerama_init();
+//
     scratchpad_fix_resolution();
 
     xcb_query_pointer_reply_t* pointerReply = NULL;
@@ -413,22 +411,10 @@ int main(int argc, char* argv[])
         output = randr_get_first_output();
     }
 
-    container_activate(container_descend_focused (output_get_content (output->container)));
+//    container_activate(container_descend_focused (output_get_content (output->container)));
     free (pointerReply);
 
     tree_render();
-
-    // 监听客户端的 socket
-//    struct ev_io* ipcIO = g_malloc0 (sizeof(struct ev_io));
-//    if (NULL == ipcIO) {
-//        ERROR(_("malloc error"));
-//        return 1;
-//    }
-//    ev_io_init (ipcIO, ipc_new_client, ipcSocket, EV_READ);
-//    ev_io_start (gMainLoop, ipcIO);
-
-//    struct ev_io* socketIpcIO = NULL;
-//    gListenFds = sd_listen
 
     x_set_gwm_atoms();
 
@@ -456,6 +442,7 @@ int main(int argc, char* argv[])
         while (NULL != (event = xcb_poll_for_event(gConn))) {
             if (0 == event->response_type) {
                 free (event);
+                DEBUG("...");
                 continue;
             }
 

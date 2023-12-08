@@ -18,11 +18,11 @@ add_definitions(-w -g
 
 find_package(PkgConfig)
 pkg_check_modules(CAIRO REQUIRED cairo)
-pkg_check_modules(PANGO REQUIRED pango)
 pkg_check_modules(PCRE REQUIRED libpcre)
 pkg_check_modules(GLIB REQUIRED glib-2.0)
-pkg_check_modules(SN REQUIRED libstartup-notification-1.0)
+pkg_check_modules(PANGO REQUIRED pango pangocairo)
 pkg_check_modules(XKB REQUIRED xkbcommon xkbcommon-x11)
+pkg_check_modules(SN REQUIRED libstartup-notification-1.0)
 pkg_check_modules(XCB REQUIRED xcb xcb-aux xcb-shape xcb-xkb xcb-keysyms xcb-xinerama xcb-xrm xcb-cursor)
 
 set(LIBS -lm -lX11 -lXmu -lev)

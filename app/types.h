@@ -4,17 +4,27 @@
 
 #ifndef GRACEFUL_WM_TYPES_H
 #define GRACEFUL_WM_TYPES_H
+
+#include <glib.h>
 #include <pcre2.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <xcb/xcb.h>
 #include <xcb/shape.h>
 #include <xcb/randr.h>
+#include <glib/gi18n.h>
 #include <xcb/xcb_icccm.h>
 
 #include <cairo/cairo.h>
 #include <pango/pango.h>
 #include <libsn/sn-launcher.h>
+
+#define CAIRO_SURFACE_FLUSH(surface)  \
+    do {                              \
+        cairo_surface_flush(surface); \
+        cairo_surface_flush(surface); \
+    } while (0)
+
 
 typedef uint32_t                            GWMEventStateMask;
 
@@ -46,8 +56,10 @@ typedef struct Window                       GWMWindow;                  // ok
 typedef struct Surface                      GWMSurface;                 // ok
 typedef struct Binding                      GWMBinding;                 // ok
 typedef struct Container                    GWMContainer;               // ok
+typedef struct ColorPixel                   GWMColorPixel;              // ok
 typedef struct OutputName                   GWMOutputName;              // ok
 typedef struct Assignment                   GWMAssignment;              // ok
+typedef struct RenderParams                 GWMRenderParams;            // ok
 typedef struct BindingKeycode               GWMBindingKeycode;          // ok
 typedef struct GWMStartupSequence           GWMStartupSequence;         // ok
 typedef struct ReserveEdgePixels            GWMReserveEdgePixels;       // ok
@@ -218,11 +230,28 @@ struct Color
     uint32_t                    colorPixel;
 };
 
+struct ColorPixel
+{
+    char                        hex[8];
+    uint32_t                    pixel;
+    GSList*                     colorPixels;        // GWMColorPixel
+};
+
 struct BindingKeycode
 {
     xcb_keycode_t               keycode;
     GWMEventStateMask           modifiers;
     GQueue                      keycodes;           // BindKeycode
+};
+
+struct RenderParams
+{
+    int                         x;
+    int                         y;
+    int                         decoHeight;
+    GWMRect                     rect;
+    int                         children;
+    int*                        sizes;
 };
 
 struct ReserveEdgePixels
@@ -525,10 +554,10 @@ struct Container
     GWMWindow*                  window;                     //
     struct ev_timer*            urgencyTimer;
     GWMDecorationRenderParams*  decorationRenderParams;
-    GQueue                      floatingHead;               // Container
-    GQueue                      nodesHead;                  // Container
-    GQueue                      focusHead;                  // Container
-    GQueue                      swallowHead;                // Match
+    GQueue                      floatingHead;               // GWMContainer
+    GQueue                      nodesHead;                  // GWMContainer
+    GQueue                      focusHead;                  // GWMContainer
+    GQueue                      swallowHead;                // GWMMatch
     GWMFullScreenMode           fullScreenMode;
 
     bool                        sticky;

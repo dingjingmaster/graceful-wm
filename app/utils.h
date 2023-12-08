@@ -30,7 +30,7 @@
 bool util_path_exists(const char *path);
 char* util_resolve_tilde(const char *path);
 ssize_t util_slurp(const char *path, char **buf);
-xcb_visualtype_t* get_visual_type (xcb_screen_t* screen);
+xcb_visualtype_t* util_get_visual_type (xcb_screen_t* screen);
 
 bool util_parse_long(const char *str, long *out, int base);
 uint32_t util_aio_get_mod_mask_for (uint32_t keySym, xcb_key_symbols_t* symbols);
