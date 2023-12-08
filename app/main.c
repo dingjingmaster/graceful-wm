@@ -251,7 +251,7 @@ int main(int argc, char* argv[])
         free (atomReply);
 
         // check if the selection is already owned
-        xcb_get_selection_owner_reply_t* selectionReply = NULL;//xcb_get_selection_owner_reply (gConn, xcb_get_selection_owner (gConn, gWMSn), NULL);
+        xcb_get_selection_owner_reply_t* selectionReply = xcb_get_selection_owner_reply (gConn, xcb_get_selection_owner (gConn, gWMSn), NULL);
         if (selectionReply && XCB_NONE != selectionReply->owner && !command_line_get_is_replace()) {
             ERROR(_("Another window manager is already running (WM_Sn is owned)"));
             printf (_("Another window manager is already running (WM_Sn is owned)"));
