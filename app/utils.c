@@ -185,3 +185,13 @@ bool util_rect_contains(GWMRect rect, uint32_t x, uint32_t y)
 {
     return 0;
 }
+
+bool util_name_is_digits(const char *name)
+{
+    return 0;
+}
+
+int util_ws_name_to_number(const char *name)
+{
+    return 0;
+}

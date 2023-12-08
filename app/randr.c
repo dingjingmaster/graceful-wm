@@ -33,3 +33,35 @@ GWMOutput *randr_get_output_by_name(const char *name, bool requireActive)
 {
     return NULL;
 }
+
+GWMOutput *randr_create_root_output(xcb_connection_t *conn) {
+    return NULL;
+}
+
+GWMOutput *randr_get_output_with_dimensions(GWMRect rect) {
+    return NULL;
+}
+
+GWMOutput *randr_output_containing_rect(GWMRect rect) {
+    return NULL;
+}
+
+GWMOutput *randr_get_output_from_rect(GWMRect rect) {
+    return NULL;
+}
+
+void randr_output_init_container(GWMOutput *output) {
+
+}
+
+void randr_init_ws_for_output(GWMOutput *output) {
+
+}
+
+void randr_disable_output(GWMOutput *output) {
+
+}
+
+void randr_query_outputs(void) {
+
+}

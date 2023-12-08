@@ -86,6 +86,31 @@ void startup_sequence_delete(GWMStartupSequence* sequence)
     }
 }
 
+void startup_start_application(const char *command, bool noStartupID)
+{
+
+}
+
+void startup_sequence_rename_workspace(const char *old_name, const char *new_name)
+{
+
+}
+
+GWMStartupSequence* startup_sequence_get(GWMWindow *cWindow, xcb_get_property_reply_t *startupIdReply, bool ignoreMappedLeader)
+{
+    return NULL;
+}
+
+char *startup_workspace_for_window(GWMWindow *cWindow, xcb_get_property_reply_t *startupIdReply)
+{
+    return NULL;
+}
+
+void startup_sequence_delete_by_window(GWMWindow *win)
+{
+
+}
+
 static int _prune_startup_sequences(void)
 {
     time_t curTime = time(NULL);

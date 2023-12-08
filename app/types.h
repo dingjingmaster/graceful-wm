@@ -608,12 +608,15 @@ typedef struct BindingKeycode               GWMBindingKeycode;          // ok
 typedef struct GWMStartupSequence           GWMStartupSequence;         // ok
 typedef struct AllContainerHead             GWMAllContainerHead;        // ok
 typedef struct ReserveEdgePixels            GWMReserveEdgePixels;       // ok
+typedef struct WorkspaceAssignment          GWMWorkspaceAssignment;     // ok
 typedef struct DecorationRenderParams       GWMDecorationRenderParams;  // ok
+typedef struct WorkspaceAssignmentsHead     GWMWorkspaceAssignmentsHead;// ok
 
 typedef struct ConfigMode                   GWMConfigMode;              // ok
 typedef struct ConfigContext                GWMConfigContext;           // ok
 
 TAILQ_HEAD(AllContainerHead, GWMContainer);
+TAILQ_HEAD(WorkspaceAssignmentsHead, WorkspaceAssignment);
 
 enum OutputCloseFar
 {
@@ -952,6 +955,16 @@ struct Match
     TAILQ_ENTRY(Match)       matches;
 //    GQueue                      matches;                // element is Match
     bool                        restartMode;
+};
+
+struct WorkspaceAssignment
+{
+    char*                       name;
+    char*                       output;
+    GWMGaps                     gaps;
+    GWMGapsMask                 gapsMask;
+
+    TAILQ_ENTRY(WorkspaceAssignment) wsAssignments;
 };
 
 struct Assignment

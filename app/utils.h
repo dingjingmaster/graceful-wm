@@ -36,4 +36,7 @@ bool util_parse_long(const char *str, long *out, int base);
 uint32_t util_aio_get_mod_mask_for (uint32_t keySym, xcb_key_symbols_t* symbols);
 uint32_t util_get_mod_mask_for (uint32_t keySym, xcb_key_symbols_t* symbols, xcb_get_modifier_mapping_reply_t* modMapReply);
 
+bool util_name_is_digits(const char *name);
+int util_ws_name_to_number(const char *name);
+
 #endif //GRACEFUL_WM_UTILS_H

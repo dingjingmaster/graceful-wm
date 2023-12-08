@@ -16,6 +16,7 @@
 #include "extend-wm-hints.h"
 #include "output.h"
 #include "utils.h"
+#include "startup.h"
 
 
 typedef struct bfs_entry bfs_entry;
@@ -933,7 +934,7 @@ void container_set_layout(GWMContainer *con, GWMLayout layout)
             new->lastSplitLayout = con->lastSplitLayout;
 
             /* 3: move the existing cons of this workspace below the new con */
-            GWMContainer** focus_order = get_focus_order(con);
+            GWMContainer** focus_order = container_get_focus_order(con);
 
             DEBUG("Moving cons");
             GWMContainer* child;
@@ -1334,7 +1335,7 @@ void container_toggle_layout(GWMContainer *con, const char *toggleMode)
                 }
             }
             else {
-                bool success = layout_from_name(cur_tok, &layout);
+                bool success = false;//layout_from_name(cur_tok, &layout);
                 if (!success || layout == L_DEFAULT) {
                     ERROR("The token '%s' was not recognized and has been skipped.", cur_tok);
                     continue;
@@ -2220,7 +2221,6 @@ static bool _container_move_to_con(GWMContainer* con, GWMContainer* target, bool
             if (!child->window) {
                 continue;
             }
-
             startup_sequence_delete_by_window(child->window);
         }
     }

@@ -91,6 +91,7 @@ GWMContainer*                   gFocused = NULL;
 GWMColorPixel*                  gColorPixels = NULL;
 
 GWMAllContainerHead             gAllContainer = TAILQ_HEAD_INITIALIZER(gAllContainer);
+GWMWorkspaceAssignmentsHead     gWorkspaceAssignments = TAILQ_HEAD_INITIALIZER(gWorkspaceAssignments);
 
 GSList*                         gConfigModes;                           // GWMConfigMode
 GList*                          gBindings;                              // GWMBinding

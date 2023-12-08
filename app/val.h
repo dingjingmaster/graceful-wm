@@ -37,6 +37,8 @@ extern GList*                           gBindings;                      // GWMBi
 extern unsigned int                     gXCBNumLockMask;
 extern GWMAllContainerHead              gAllContainer;
 
+extern GWMWorkspaceAssignmentsHead      gWorkspaceAssignments;
+
 extern char*                            gCurConfigPath;
 extern const char*                      gCurrentBindingMode;
 

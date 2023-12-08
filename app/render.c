@@ -190,3 +190,8 @@ void render_container(GWMContainer *con)
 free_params:
     FREE(params.sizes);
 }
+
+int render_deco_height(void)
+{
+    return 0;
+}

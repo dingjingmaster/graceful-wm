@@ -4,11 +4,17 @@
 
 #include "scratchpad.h"
 
-void scratchpad_show() {
+void scratchpad_show()
+{
 
 }
 
 void scratchpad_fix_resolution(void)
+{
+
+}
+
+void scratchpad_move(GWMContainer *con)
 {
 
 }
