@@ -11,20 +11,19 @@
 #include "utils.h"
 #include "types.h"
 #include "output.h"
+#include "randr.h"
 
 static int gsNumScreens = 0;
 
 
 static GWMOutput* get_screen_at (unsigned int x, unsigned int y)
 {
-//    Output *output;
-//    TAILQ_FOREACH (output, &outputs, outputs) {
-//        if (output->rect.x == x && output->rect.y == y) {
-//            return output;
-//        }
-//    }
-
-//    for (GList* ls = gOutputs; )
+    GWMOutput *output;
+    TAILQ_FOREACH (output, &gOutputs, outputs) {
+        if (output->rect.x == x && output->rect.y == y) {
+            return output;
+        }
+    }
 
     return NULL;
 }
@@ -50,33 +49,30 @@ static void query_screens(xcb_connection_t *conn)
     for (int screen = 0; screen < screens; screen++) {
         GWMOutput* s = get_screen_at(screen_info[screen].x_org, screen_info[screen].y_org);
         if (s != NULL) {
-            DEBUG(_("Re-used old Xinerama screen %p"), s);
-            /* This screen already exists. We use the littlest screen so that the user can always see the complete workspace */
+            DEBUG("Re-used old Xinerama screen %p", s);
             s->rect.width = MIN(s->rect.width, screen_info[screen].width);
             s->rect.height = MIN(s->rect.height, screen_info[screen].height);
-        }
-        else {
-            s = g_malloc0(sizeof(GWMOutput));
-            GWMOutputName* outputName = g_malloc0(sizeof(GWMOutputName));
-            outputName->name = g_strdup_printf("xinerama-%d", gsNumScreens);
-            g_queue_init (&(s->namesHead));
-            g_queue_push_head (&(s->namesHead), outputName);
+        } else {
+            s = calloc(1, sizeof(GWMOutput));
+            GWMOutputName* outputName = calloc(1, sizeof(GWMOutputName));
+            outputName->name = g_strdup_printf ("xinerama-%d", gsNumScreens);
+            SLIST_INIT(&s->namesHead);
+            SLIST_INSERT_HEAD(&s->namesHead, outputName, names);
             DEBUG(_("Created new Xinerama screen %s (%p)"), output_primary_name(s), s);
             s->active = true;
             s->rect.x = screen_info[screen].x_org;
             s->rect.y = screen_info[screen].y_org;
             s->rect.width = screen_info[screen].width;
             s->rect.height = screen_info[screen].height;
-            /* We always treat the screen at 0x0 as the primary screen */
             if (s->rect.x == 0 && s->rect.y == 0) {
-//                TAILQ_INSERT_HEAD(&outputs, s, outputs);
-//                g_queue_push_head (&(gOutput))
+                TAILQ_INSERT_HEAD(&gOutputs, s, outputs);
             }
-//            else
-//                TAILQ_INSERT_TAIL(&outputs, s, outputs);
-//            output_init_con(s);
-//            init_ws_for_output(s);
-//            num_screens++;
+            else {
+                TAILQ_INSERT_TAIL(&gOutputs, s, outputs);
+            }
+            randr_output_init_container(s);
+            randr_init_ws_for_output(s);
+            gsNumScreens++;
         }
 
         DEBUG(_("found Xinerama screen: %d x %d at %d x %d"), screen_info[screen].width, screen_info[screen].height, screen_info[screen].x_org, screen_info[screen].y_org);
@@ -97,11 +93,11 @@ static void query_screens(xcb_connection_t *conn)
  */
 static void use_root_output(xcb_connection_t *conn)
 {
-//    Output *s = create_root_output(conn);
-//    s->active = true;
-//    TAILQ_INSERT_TAIL(&outputs, s, outputs);
-//    output_init_con(s);
-//    init_ws_for_output(s);
+    GWMOutput *s = randr_create_root_output(conn);
+    s->active = true;
+    TAILQ_INSERT_TAIL(&gOutputs, s, outputs);
+    randr_output_init_container(s);
+    randr_init_ws_for_output(s);
 }
 
 

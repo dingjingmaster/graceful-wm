@@ -31,6 +31,7 @@ extern xcb_timestamp_t                          gLastTimestamp;
 extern GWMContainer*                            gContainerRoot;
 extern xcb_atom_t                               gExtendWMHintsWindow;
 
+extern GWMOutputHead                            gOutputs;
 extern struct ev_prepare*                       gXcbPrepare;
 extern GSList*                                  gConfigModes;                   // GWMConfigMode
 extern GWMAllContainerHead                      gAllContainer;

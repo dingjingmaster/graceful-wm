@@ -85,6 +85,7 @@ struct ev_prepare*                      gXcbPrepare = NULL;
 GWMContainer*                           gContainerRoot = NULL;
 GWMContainer*                           gFocused = NULL;
 
+GWMOutputHead                           gOutputs = TAILQ_HEAD_INITIALIZER(gOutputs);
 GWMAllContainerHead                     gAllContainer = TAILQ_HEAD_INITIALIZER(gAllContainer);
 GWMWorkspaceAssignmentsHead             gWorkspaceAssignments = TAILQ_HEAD_INITIALIZER(gWorkspaceAssignments);
 
