@@ -800,7 +800,9 @@ GWMContainer *workspace_create_workspace_on_output(GWMOutput *output, GWMContain
 
 bool workspace_output_triggers_assignment(GWMOutput *output, GWMWorkspaceAssignment *assignment)
 {
-    return 0;
+    GWMContainer* assigned = workspace_get_assigned_output(assignment->name, -1);
+
+    return assigned && assigned == output->container;
 }
 
 static void _workspace_apply_default_orientation(GWMContainer* ws)
