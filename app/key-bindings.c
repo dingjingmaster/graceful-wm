@@ -127,6 +127,9 @@ void key_binding_translate_keysyms(void)
         goto out;
     }
 
+    ERROR("gBinding is null: %s?", (gBindings ? "false" : "true"))
+    g_return_if_fail(gBindings);
+
     GWMBinding* bind = NULL;
     TAILQ_FOREACH (bind, gBindings, bindings) {
         if (bind->inputType == B_MOUSE) {
@@ -280,6 +283,9 @@ out:
 void key_binding_grab_all_keys(xcb_connection_t *conn)
 {
     GWMBinding* bind = NULL;
+
+    g_return_if_fail(gBindings);
+
     TAILQ_FOREACH (bind, gBindings, bindings) {
         if (bind->inputType != B_KEYBOARD) {
             continue;

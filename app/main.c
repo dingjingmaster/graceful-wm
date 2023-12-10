@@ -89,7 +89,7 @@ GWMAllContainerHead                     gAllContainer = TAILQ_HEAD_INITIALIZER(g
 GWMWorkspaceAssignmentsHead             gWorkspaceAssignments = TAILQ_HEAD_INITIALIZER(gWorkspaceAssignments);
 
 GSList*                                 gConfigModes;                           // GWMConfigMode
-TAILQ_HEAD(bindingsHead, Binding)*      gBindings;
+TAILQ_HEAD(bindingsHead, Binding)*      gBindings = NULL;
 SLIST_HEAD(colorPixelHead, ColorPixel)  gColorPixels;
 
 // 定义全局 atoms
@@ -385,7 +385,7 @@ int main(int argc, char* argv[])
     free (geoReply);
     DEBUG("end tree init!");
 
-//    xinerama_init();
+    xinerama_init();
 //
     scratchpad_fix_resolution();
 
@@ -408,7 +408,7 @@ int main(int argc, char* argv[])
         output = randr_get_first_output();
     }
 
-//    container_activate(container_descend_focused (output_get_content (output->container)));
+    container_activate(container_descend_focused (output_get_content (output->container)));
     free (pointerReply);
 
     tree_render();
@@ -469,10 +469,7 @@ int main(int argc, char* argv[])
     ev_loop (gMainLoop, 0);
 
     // free
-    {
-        free (xcbWatcher);
-        xcbWatcher = NULL;
-    }
+    FREE(xcbWatcher);
 
     return 0;
 }
