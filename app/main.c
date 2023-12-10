@@ -90,12 +90,14 @@ GWMContainer*                           gContainerRoot = NULL;
 GWMContainer*                           gFocused = NULL;
 
 GWMOutputHead                           gOutputs = TAILQ_HEAD_INITIALIZER(gOutputs);
+GWMAssignmentHead                       gAssignments = TAILQ_HEAD_INITIALIZER(gAssignments);
 GWMAllContainerHead                     gAllContainer = TAILQ_HEAD_INITIALIZER(gAllContainer);
 GWMWorkspaceAssignmentsHead             gWorkspaceAssignments = TAILQ_HEAD_INITIALIZER(gWorkspaceAssignments);
 
 GSList*                                 gConfigModes;                           // GWMConfigMode
 TAILQ_HEAD(bindingsHead, Binding)*      gBindings = NULL;
 SLIST_HEAD(colorPixelHead, ColorPixel)  gColorPixels;
+
 xcb_window_t                            gFocusedID = XCB_NONE;
 
 // 定义全局 atoms

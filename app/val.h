@@ -35,6 +35,7 @@ extern xcb_atom_t                               gExtendWMHintsWindow;
 extern GWMOutputHead                            gOutputs;
 extern struct ev_prepare*                       gXcbPrepare;
 extern GSList*                                  gConfigModes;                   // GWMConfigMode
+extern GWMAssignmentHead                        gAssignments;
 extern GWMAllContainerHead                      gAllContainer;
 extern unsigned int                             gXCBNumLockMask;
 extern GWMWorkspaceAssignmentsHead              gWorkspaceAssignments;

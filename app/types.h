@@ -611,7 +611,9 @@ typedef struct ColorPixel                   GWMColorPixel;              // ok
 typedef struct OutputName                   GWMOutputName;              // ok
 typedef struct Assignment                   GWMAssignment;              // ok
 typedef struct RenderParams                 GWMRenderParams;            // ok
+typedef struct CommandResult                GWMCommandResult;           // ok
 typedef struct BindingKeycode               GWMBindingKeycode;          // ok
+typedef struct AssignmentHead               GWMAssignmentHead;          // ok
 typedef struct StartupSequence              GWMStartupSequence;         // ok
 typedef struct AllContainerHead             GWMAllContainerHead;        // ok
 typedef struct ReserveEdgePixels            GWMReserveEdgePixels;       // ok
@@ -623,6 +625,7 @@ typedef struct ConfigMode                   GWMConfigMode;              // ok
 typedef struct ConfigContext                GWMConfigContext;           // ok
 
 TAILQ_HEAD(OutputHead, Output);
+TAILQ_HEAD(AssignmentHead, Assignment);
 TAILQ_HEAD(AllContainerHead, Container);
 TAILQ_HEAD(WorkspaceAssignmentsHead, WorkspaceAssignment);
 
@@ -800,6 +803,13 @@ struct Color
     double                      blue;
     double                      alpha;
     uint32_t                    colorPixel;
+};
+
+struct CommandResult
+{
+    bool                                        parseError;
+    char*                                       errorMessage;
+    bool                                        needsTreeRender;
 };
 
 struct Mark
@@ -998,14 +1008,14 @@ struct Assignment
         A_NO_FOCUS              = (1 << 2),
         A_TO_WORKSPACE_NUMBER   = (1 << 3),
         A_TO_OUTPUT             = (1 << 4),
-    };
+    } type;
     GWMMatch                                    match;
     union {
         char*       command;
         char*       workspace;
         char*       output;
     } destination;
-    GQueue                                      assignments;
+    TAILQ_ENTRY(Assignment)                     assignments;
 };
 
 struct Binding
