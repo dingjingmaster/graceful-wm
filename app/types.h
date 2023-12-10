@@ -19,6 +19,7 @@
 #include <pango/pango.h>
 #include <libsn/sn-launcher.h>
 
+#if 1
 
 #if defined(QUEUE_MACRO_DEBUG) || (defined(_KERNEL) && defined(DIAGNOSTIC))
 #define _Q_INVALIDATE(a) (a) = ((void *)-1)
@@ -569,7 +570,9 @@
       { return; } \
   } G_STMT_END
 
+#endif
 typedef uint32_t                            GWMEventStateMask;
+
 
 typedef enum Layout                         GWMLayout;                  // ok
 typedef enum Broder                         GWMBorder;                  // ok
@@ -578,8 +581,10 @@ typedef enum Position                       GWMPosition;                // ok
 typedef enum GapsMask                       GWMGapsMask;                // ok
 typedef enum MarkMode                       GWMMarkMode;                // ok
 typedef enum Adjacent                       GWMAdjacent;                // ok
+typedef enum SmartGaps                      GWMSmartGaps;               // ok
 typedef enum InputType                      GWMInputType;               // ok
 typedef enum Direction                      GWMDirection;               // ok
+typedef enum DragResult                     GWMDragResult;              // ok
 typedef enum KillWindow                     GWMKillWindow;              // ok
 typedef enum Orientation                    GWMOrientation;             // ok
 typedef enum BorderStyle                    GWMBorderStyle;             // ok
@@ -615,7 +620,7 @@ typedef struct WorkspaceAssignmentsHead     GWMWorkspaceAssignmentsHead;// ok
 typedef struct ConfigMode                   GWMConfigMode;              // ok
 typedef struct ConfigContext                GWMConfigContext;           // ok
 
-TAILQ_HEAD(AllContainerHead, GWMContainer);
+TAILQ_HEAD(AllContainerHead, Container);
 TAILQ_HEAD(WorkspaceAssignmentsHead, WorkspaceAssignment);
 
 enum OutputCloseFar
@@ -662,6 +667,13 @@ enum BorderStyle
     BS_NONE         = 0,
     BS_PIXEL        = 1,
     BS_NORMAL       = 2,
+};
+
+enum SmartGaps
+{
+    SMART_GAPS_OFF,
+    SMART_GAPS_ON,
+    SMART_GAPS_INVERSE_OUTER
 };
 
 enum XKBGroupMask
@@ -741,6 +753,14 @@ enum Broder
     BORDER_BOTTOM           = (1 << 3)
 };
 
+enum DragResult
+{
+    DRAGGING = 0,
+    DRAG_SUCCESS,
+    DRAG_REVERT,
+    DRAG_ABORT
+};
+
 struct Regex
 {
     char*                       pattern;
@@ -776,101 +796,93 @@ struct Color
     double                      green;
     double                      blue;
     double                      alpha;
-
     uint32_t                    colorPixel;
 };
 
 struct Mark
 {
-    char*                       name;
-    TAILQ_ENTRY(Mark)           marks;
+    char*                                       name;
+    TAILQ_ENTRY(Mark)                           marks;
 };
 
 struct ColorPixel
 {
-    char                        hex[8];
-    uint32_t                    pixel;
-    GSList*                     colorPixels;        // GWMColorPixel
+    char                                        hex[8];
+    uint32_t                                    pixel;
+    SLIST_ENTRY(ColorPixel)                     colorPixels;
 };
 
 struct BindingKeycode
 {
-    xcb_keycode_t               keycode;
-    GWMEventStateMask           modifiers;
-    GQueue                      keycodes;           // BindKeycode
+    xcb_keycode_t                               keycode;
+    GWMEventStateMask                           modifiers;
+    TAILQ_ENTRY(BindingKeycode)                 keycodes;
 };
 
 struct RenderParams
 {
-    int                         x;
-    int                         y;
-    int                         decoHeight;
-    GWMRect                     rect;
-    int                         children;
-    int*                        sizes;
+    int                                         x;
+    int                                         y;
+    int                                         decoHeight;
+    GWMRect                                     rect;
+    int                                         children;
+    int*                                        sizes;
 };
 
 struct ReserveEdgePixels
 {
-    uint32_t                    left;
-    uint32_t                    right;
-    uint32_t                    top;
-    uint32_t                    bottom;
+    uint32_t                                    left;
+    uint32_t                                    right;
+    uint32_t                                    top;
+    uint32_t                                    bottom;
 };
 
 struct OutputName
 {
-    char*                       name;
-    GSList*                     names;              // OutputName
+    char*                                       name;
+    SLIST_ENTRY(OutputName)                     names;
 };
 
 struct ConfigContext
 {
-    bool                        hasErrors;
-    bool                        hasWarnings;
-
-    int                         lineNumber;
-    char*                       lineCopy;
-    const char*                 filename;
-
-    char*                       compactError;
-
-    int                         firstColumn;
-    int                         lastColumn;
+    bool                                        hasErrors;
+    bool                                        hasWarnings;
+    int                                         lineNumber;
+    char*                                       lineCopy;
+    const char*                                 filename;
+    char*                                       compactError;
+    int                                         firstColumn;
+    int                                         lastColumn;
 };
 
 struct ConfigMode
 {
-    char*                       name;
-    bool                        pangoMarkup;
-    //struct bindings_head*       bindings;
-    GList*                      bindings;           // GWMBinding
-
-    GSList                      modes;              // ConfigMode
+    char*                                       name;
+    bool                                        pangoMarkup;
+    struct BindingsHead*                        bindings;
+    SLIST_ENTRY(ConfigMode)                     modes;
 };
 
 struct Output
 {
-    xcb_randr_output_t          id;
-    bool                        active;
-    bool                        changed;
-    bool                        primary;
-    bool                        toBeDisabled;
-
-    GQueue                      namesHead;          // OutputName
-    GQueue                      outputs;            // Output
-
-    GWMContainer*               container;
-    GWMRect                     rect;
+    xcb_randr_output_t                          id;
+    GWMRect                                     rect;
+    bool                                        active;
+    bool                                        changed;
+    bool                                        primary;
+    TAILQ_ENTRY(Output)                         outputs;
+    SLIST_HEAD(namesHead, OutputName)           namesHead;
+    GWMContainer*                               container;
+    bool                                        toBeDisabled;
 };
 
 struct GWMStartupSequence
 {
-    char*                       id;                // startup ID for this sequence, generated by libstartup-notification
-    char*                       workspace;         // workspace on which this startup was initiated
-    SnLauncherContext*          context;           // libstartup-notification context for this launch
-    time_t                      deleteAt;          // time at which this sequence should be deleted (after it was marked as completed)
-    GQueue                      sequences;
+    char*                                       id;                // startup ID for this sequence, generated by libstartup-notification
+    char*                                       workspace;         // workspace on which this startup was initiated
+    SnLauncherContext*                          context;           // libstartup-notification context for this launch
+    time_t                                      deleteAt;          // time at which this sequence should be deleted (after it was marked as completed)
+    GQueue                                      sequences;
 };
 
 struct Font
@@ -881,8 +893,8 @@ struct Font
         FONT_TYPE_PANGO
     } type;
 
-    int                         height;             // The height of the font, built from font_ascent + font_descent
-    char*                       pattern;            // The pattern/name used to load the font.
+    int                                         height;             // The height of the font, built from font_ascent + font_descent
+    char*                                       pattern;            // The pattern/name used to load the font.
 
     union {
         struct {
@@ -891,36 +903,34 @@ struct Font
             xcb_charinfo_t*         table;           // Font table for this font (may be NULL)
         } xcb;
 
-        PangoFontDescription*   pangoDesc;           // The pango font description
+        PangoFontDescription*                   pangoDesc;           // The pango font description
     } specific;
 };
 
 struct DecorationRenderParams
 {
-    struct Colortriple*         color;
-    int                         borderStyle;
-    GWMSize                     containerSize;
-    GWMSize                     containerWindowSize;
-    GWMRect                     containerDecorationRect;
-    GWMColor                    background;
-    GWMLayout                   parentLayout;
-    bool                        containerIsLeaf;
+    struct Colortriple*                         color;
+    int                                         borderStyle;
+    GWMSize                                     containerSize;
+    GWMSize                                     containerWindowSize;
+    GWMRect                                     containerDecorationRect;
+    GWMColor                                    background;
+    GWMLayout                                   parentLayout;
+    bool                                        containerIsLeaf;
 };
 
 struct Match
 {
-    char*                       error;
-
-    GWMRegex*                   mark;
-    GWMRegex*                   title;
-    GWMRegex*                   class;
-    GWMRegex*                   machine;
-    GWMRegex*                   instance;
-    GWMRegex*                   workspace;
-    GWMRegex*                   windowRole;
-    GWMRegex*                   application;
-
-    xcb_atom_t                  windowType;
+    char*                                       error;
+    GWMRegex*                                   mark;
+    GWMRegex*                                   title;
+    GWMRegex*                                   class;
+    GWMRegex*                                   machine;
+    GWMRegex*                                   instance;
+    GWMRegex*                                   workspace;
+    GWMRegex*                                   windowRole;
+    GWMRegex*                                   application;
+    xcb_atom_t                                  windowType;
     enum {
         U_DO_NOT_CHECK  = -1,
         U_LATEST        = 0,
@@ -933,7 +943,7 @@ struct Match
         M_DOCK_TOP      = 2,
         M_DOCK_BOTTOM   = 3
     } dock;
-    xcb_window_t                id;
+    xcb_window_t                                id;
     enum {
         WM_ANY          = 0,
         WM_TILING_AUTO,
@@ -943,8 +953,8 @@ struct Match
         WM_FLOATING_USER,
         WM_FLOATING
     } windowMode;
-    GWMContainer*               containerID;
-    bool                        matchAllWindows;
+    GWMContainer*                               containerID;
+    bool                                        matchAllWindows;
 
     enum {
         M_HERE          = 0,
@@ -952,19 +962,18 @@ struct Match
         M_BELOW
     } insertWhere;
 
-    TAILQ_ENTRY(Match)       matches;
-//    GQueue                      matches;                // element is Match
-    bool                        restartMode;
+    TAILQ_ENTRY(Match)                          matches;
+    bool                                        restartMode;
 };
 
 struct WorkspaceAssignment
 {
-    char*                       name;
-    char*                       output;
-    GWMGaps                     gaps;
-    GWMGapsMask                 gapsMask;
+    char*                                       name;
+    char*                                       output;
+    GWMGaps                                     gaps;
+    GWMGapsMask                                 gapsMask;
 
-    TAILQ_ENTRY(WorkspaceAssignment) wsAssignments;
+    TAILQ_ENTRY(WorkspaceAssignment)            wsAssignments;
 };
 
 struct Assignment
@@ -977,20 +986,18 @@ struct Assignment
         A_TO_WORKSPACE_NUMBER   = (1 << 3),
         A_TO_OUTPUT             = (1 << 4),
     };
-
-    GWMMatch                    match;
-
+    GWMMatch                                    match;
     union {
         char*       command;
         char*       workspace;
         char*       output;
     } destination;
-    GQueue                      assignments;
+    GQueue                                      assignments;
 };
 
 struct Binding
 {
-    GWMInputType                inputType;
+    GWMInputType                                inputType;
 
     enum {
         B_UPON_KEYPRESS = 0,                            // This binding will only be executed upon KeyPress events
@@ -998,95 +1005,90 @@ struct Binding
         B_UPON_KEYRELEASE_IGNORE_MODS = 2,
     } release;
 
-    bool                        border;
-    bool                        wholeWindow;
-    bool                        excludeTitleBar;
-    uint32_t                    keycode;
-    GWMEventStateMask           eventStateMask;
-    char*                       symbol;
-    char*                       command;
-    GQueue                      keycodesHead;           // GWMBindingKeycode
-    GQueue                      bindings;               // GWMBinding
+    bool                                        border;
+    bool                                        wholeWindow;
+    bool                                        excludeTitleBar;
+    uint32_t                                    keycode;
+    GWMEventStateMask                           eventStateMask;
+    char*                                       symbol;
+    char*                                       command;
+    TAILQ_ENTRY(Binding)                        bindings;
+    TAILQ_HEAD(keycodesHead, BindingKeycode)    keycodesHead;
 };
 
 struct Window
 {
-    xcb_window_t                id;
-    xcb_window_t                leader;                 // 保存leader窗口(工具窗口和类似浮动窗口的逻辑父窗口)ID
-    xcb_window_t                transientFor;           //
-    uint32_t                    nrAssignments;          // 指向已经在此窗口运行过的赋值的指针(赋值只运行一次)
-    GWMAssignment**             ranAssignments;         //
+    xcb_window_t                                id;
+    xcb_window_t                                leader;                 // 保存leader窗口(工具窗口和类似浮动窗口的逻辑父窗口)ID
+    xcb_window_t                                transientFor;           //
+    uint32_t                                    nrAssignments;          // 指向已经在此窗口运行过的赋值的指针(赋值只运行一次)
+    GWMAssignment**                             ranAssignments;         //
 
-    char*                       classClass;
-    char*                       classInstance;
-    char*                       name;
+    char*                                       classClass;
+    char*                                       classInstance;
+    char*                                       name;
 
-    char*                       role;                   // WM_WINDOW_ROLE of this window
-    char*                       machine;                // WM_CLIENT_MACHINE of the window
-    bool                        nameXChanged;           //
-    bool                        usesNetWMName;          //
-    bool                        needTakeFocus;          //
-    bool                        doesNotAcceptFocus;     //
-    xcb_atom_t                  windowType;
-    uint32_t                    wmDesktop;
+    char*                                       role;                   // WM_WINDOW_ROLE of this window
+    char*                                       machine;                // WM_CLIENT_MACHINE of the window
+    bool                                        nameXChanged;           //
+    bool                                        usesNetWMName;          //
+    bool                                        needTakeFocus;          //
+    bool                                        doesNotAcceptFocus;     //
+    xcb_atom_t                                  windowType;
+    uint32_t                                    wmDesktop;
     enum {
         W_NO_DOCK       = 0,
         W_DOCK_TOP      = 1,
         W_DOCK_BOTTOM   =2,
     } dock;
-    struct timeval              urgent;                 // Window何时被标记为紧急? 0表示不紧急
-    GWMReserveEdgePixels        reserved;               //
+    struct timeval                              urgent;                 // Window何时被标记为紧急? 0表示不紧急
+    GWMReserveEdgePixels                        reserved;               //
 
-    uint16_t                    depth;
+    uint16_t                                    depth;
 
-    int                         baseWidth;
-    int                         baseHeight;
+    int                                         baseWidth;
+    int                                         baseHeight;
 
-    int                         widthInc;
-    int                         heightInc;
+    int                                         widthInc;
+    int                                         heightInc;
 
-    int                         minWidth;
-    int                         minHeight;
+    int                                         minWidth;
+    int                                         minHeight;
 
-    int                         maxWidth;
-    int                         maxHeight;
+    int                                         maxWidth;
+    int                                         maxHeight;
 
-    double                      minAspectRatio;
-    double                      maxAspectRatio;
+    double                                      minAspectRatio;
+    double                                      maxAspectRatio;
 
-    cairo_surface_t*            icon;
+    cairo_surface_t*                            icon;
 
-    bool                        shaped;
-    bool                        inputShaped;
-    time_t                      managedSince;
-    bool                        swallowed;
-
-    //FIXME://
+    bool                                        shaped;
+    bool                                        inputShaped;
+    time_t                                      managedSince;
+    bool                                        swallowed;
 };
 
 struct Surface
 {
-    bool                        ownsGC;
-
-    int                         width;
-    int                         height;
-
-    xcb_drawable_t              id;             // The drawable which is being represented
-    xcb_gcontext_t              gc;             // XCB graphics context
-
-    cairo_t*                    cairo;
-    cairo_surface_t*            surface;        // A cairo surface representing the drawable
+    bool                                        ownsGC;
+    int                                         width;
+    int                                         height;
+    xcb_drawable_t                              id;             // The drawable which is being represented
+    xcb_gcontext_t                              gc;             // XCB graphics context
+    cairo_t*                                    cairo;
+    cairo_surface_t*                            surface;        // A cairo surface representing the drawable
 };
 
 
 struct Container
 {
-    bool                        mapped;
-    bool                        urgent;             // 是否加急处理，如果容器内有窗口设置加急则设置
-    bool                        pixmapRecreated;    //
-    uint8_t                     ignoreUnmap;        // 该容器应该忽略的UnmapNotify事件的数量(如果UnmapNotify事件是由本身引起的，则需要忽略这些事件。例如，在重新定位或在工作区更改时取消对窗口的映射时。)
-    GWMSurface                  frame;
-    GWMSurface                  frameBuffer;
+    bool                                        mapped;
+    bool                                        urgent;             // 是否加急处理，如果容器内有窗口设置加急则设置
+    bool                                        pixmapRecreated;    //
+    uint8_t                                     ignoreUnmap;        // 该容器应该忽略的UnmapNotify事件的数量(如果UnmapNotify事件是由本身引起的，则需要忽略这些事件。例如，在重新定位或在工作区更改时取消对窗口的映射时。)
+    GWMSurface                                  frame;
+    GWMSurface                                  frameBuffer;
 
     enum {
         CT_ROOT = 0,
@@ -1097,51 +1099,46 @@ struct Container
         CT_DOCK_AREA = 5,
     } type;
 
-    int                         workspaceNum;
-    GWMGaps                     gaps;
-    GWMContainer*               parent;
-    GWMRect                     rect;
-    GWMRect                     windowRect;
-    GWMRect                     decorationRect;
-    GWMRect                     geoRect;
+    int                                         workspaceNum;
+    GWMGaps                                     gaps;
+    GWMContainer*                               parent;
+    GWMRect                                     rect;
+    GWMRect                                     windowRect;
+    GWMRect                                     decorationRect;
+    GWMRect                                     geoRect;
 
-    char*                       name;
-    char*                       titleFormat;
+    char*                                       name;
+    char*                                       titleFormat;
 
-    int                         windowIconPadding;
-    char*                       stickyGroup;                // sticky group 它将多个容器捆绑到一个组中。内容在所有容器之间共享，也就是说，它们显示在当前可见的任何一个容器上
+    int                                         windowIconPadding;
+    char*                                       stickyGroup;                // sticky group 它将多个容器捆绑到一个组中。内容在所有容器之间共享，也就是说，它们显示在当前可见的任何一个容器上
 
-    bool                        markChanged;                // 缓存以确定是否需要重新绘制
-//    GQueue                      marksHead;                  // 用户可定义标记，以便稍后跳转到此容器
-    TAILQ_HEAD(marksHead, Mark) marksHead;
-    double                      percent;
+    bool                                        markChanged;                // 缓存以确定是否需要重新绘制
+    TAILQ_HEAD(marksHead, Mark)                 marksHead;                  // 用户可定义标记，以便稍后跳转到此容器
+    double                                      percent;
 
-    int                         borderWidth;
-    int                         currentBorderWidth;
+    int                                         borderWidth;
+    int                                         currentBorderWidth;
 
-    GWMWindow*                  window;                     //
-    struct ev_timer*            urgencyTimer;
-    GWMDecorationRenderParams*  decorationRenderParams;
-//    GQueue                      floatingHead;               // GWMContainer
-//    GQueue                      nodesHead;                  // GWMContainer
-//    GQueue                      focusHead;                  // GWMContainer
-//    GQueue                      swallowHead;                // GWMMatch
-    TAILQ_HEAD(nodesHead, Container)     nodesHead;
-    TAILQ_HEAD(focusHead, Container)     focusHead;
-    TAILQ_HEAD(swallowHead, Match)       swallowHead;
-    TAILQ_HEAD(floatingHead, Container)  floatingHead;
+    GWMWindow*                                  window;                     //
+    struct ev_timer*                            urgencyTimer;
+    GWMDecorationRenderParams*                  decorationRenderParams;
+    TAILQ_HEAD(nodesHead, Container)            nodesHead;
+    TAILQ_HEAD(focusHead, Container)            focusHead;
+    TAILQ_HEAD(swallowHead, Match)              swallowHead;
+    TAILQ_HEAD(floatingHead, Container)         floatingHead;
 
 
-    GWMFullScreenMode           fullScreenMode;
+    GWMFullScreenMode                           fullScreenMode;
 
-    bool                        sticky;
+    bool                                        sticky;
 
-    GWMLayout                   layout;
-    GWMLayout                   lastSplitLayout;
-    GWMLayout                   workspaceLayout;
+    GWMLayout                                   layout;
+    GWMLayout                                   lastSplitLayout;
+    GWMLayout                                   workspaceLayout;
 
-    GWMBorderStyle              borderStyle;
-    GWMBorderStyle              maxUserBorderStyle;
+    GWMBorderStyle                              borderStyle;
+    GWMBorderStyle                              maxUserBorderStyle;
 
     enum {
         FLOATING_AUTO_OFF   = 0,
@@ -1150,15 +1147,10 @@ struct Container
         FLOATING_USER_ON    = 3,
     } floating;
 
-//    GQueue                      nodes;
-//    GQueue                      focused;
-//    GQueue                      allContainers;
-//    GQueue                      floatingWindows;
-
-    TAILQ_ENTRY(Container)   nodes;
-    TAILQ_ENTRY(Container)   focused;
-    TAILQ_ENTRY(Container)   allContainers;
-    TAILQ_ENTRY(Container)   floatingWindows;
+    TAILQ_ENTRY(Container)                      nodes;
+    TAILQ_ENTRY(Container)                      focused;
+    TAILQ_ENTRY(Container)                      allContainers;
+    TAILQ_ENTRY(Container)                      floatingWindows;
 
     // callbacks
     void (*onRemoveChild) (GWMContainer*);
@@ -1169,9 +1161,9 @@ struct Container
         SCRATCHPAD_CHANGED  = 2,
     } scratchpadState;
 
-    int                         oldID;
-    uint16_t                    depth;
-    xcb_colormap_t              colormap;
+    int                                         oldID;
+    uint16_t                                    depth;
+    xcb_colormap_t                              colormap;
 };
 
 

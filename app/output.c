@@ -27,7 +27,7 @@ GWMContainer *output_get_content(GWMContainer *output)
 
 char *output_primary_name(GWMOutput *output)
 {
-    return ((GWMOutputName*)(output->namesHead.head->data))->name;
+    return SLIST_FIRST(&output->namesHead)->name;
 }
 
 void output_push_sticky_windows(GWMContainer *oldFocus)

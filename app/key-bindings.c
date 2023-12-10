@@ -128,17 +128,16 @@ void key_binding_translate_keysyms(void)
     }
 
     GWMBinding* bind = NULL;
-    for (GList* ls = gBindings; ls; ls = ls->next) {
-        bind = ls->data;
-        if (B_MOUSE == bind->inputType) {
+    TAILQ_FOREACH (bind, gBindings, bindings) {
+        if (bind->inputType == B_MOUSE) {
             long button;
             if (!util_parse_long(bind->symbol + (sizeof("button") - 1), &button, 10)) {
-                ERROR(_("Could not translate string to button: \"%s\""), bind->symbol);
+                ERROR("Could not translate string to button: \"%s\"", bind->symbol);
             }
 
             xcb_keycode_t key = button;
             bind->keycode = key;
-            DEBUG(_("Binding Mouse button, Keycode = %d"), key);
+            DEBUG("Binding Mouse button, Keycode = %d", key);
         }
 
         xkb_layout_index_t group = XCB_XKB_GROUP_1;
@@ -152,12 +151,13 @@ void key_binding_translate_keysyms(void)
             group = XCB_XKB_GROUP_4;
         }
 
-        DEBUG(_("Binding %p group = %d, event_state_mask = %d, &2 = %s, &3 = %s, &4 = %s"), \
-                bind, group, bind->eventStateMask, \
-                (bind->eventStateMask & GWM_XKB_GROUP_MASK_2) ? "yes" : "no", \
-                (bind->eventStateMask & GWM_XKB_GROUP_MASK_3) ? "yes" : "no", \
-                (bind->eventStateMask & GWM_XKB_GROUP_MASK_4) ? "yes" : "no");
-        (void) xkb_state_update_mask(
+        DEBUG("Binding %p group = %d, event_state_mask = %d, &2 = %s, &3 = %s, &4 = %s",
+              bind, group, bind->eventStateMask,
+              (bind->eventStateMask & GWM_XKB_GROUP_MASK_2) ? "yes" : "no",
+              (bind->eventStateMask & GWM_XKB_GROUP_MASK_3) ? "yes" : "no",
+              (bind->eventStateMask & GWM_XKB_GROUP_MASK_4) ? "yes" : "no");
+
+        (void)xkb_state_update_mask(
             dummyState,
             (bind->eventStateMask & 0x1FFF) /* xkb_mod_mask_t base_mods, */,
             0 /* xkb_mod_mask_t latched_mods, */,
@@ -166,7 +166,7 @@ void key_binding_translate_keysyms(void)
             0 /* xkb_layout_index_t latched_group, */,
             group /* xkb_layout_index_t locked_group, */);
 
-        (void) xkb_state_update_mask(
+        (void)xkb_state_update_mask(
             dummyStateNoShift,
             (bind->eventStateMask & 0x1FFF) ^ XCB_KEY_BUT_MASK_SHIFT /* xkb_mod_mask_t base_mods, */,
             0 /* xkb_mod_mask_t latched_mods, */,
@@ -175,7 +175,7 @@ void key_binding_translate_keysyms(void)
             0 /* xkb_layout_index_t latched_group, */,
             group /* xkb_layout_index_t locked_group, */);
 
-        (void) xkb_state_update_mask(
+        (void)xkb_state_update_mask(
             dummyStateNumlock,
             (bind->eventStateMask & 0x1FFF) | gXCBNumLockMask /* xkb_mod_mask_t base_mods, */,
             0 /* xkb_mod_mask_t latched_mods, */,
@@ -184,7 +184,7 @@ void key_binding_translate_keysyms(void)
             0 /* xkb_layout_index_t latched_group, */,
             group /* xkb_layout_index_t locked_group, */);
 
-        (void) xkb_state_update_mask(
+        (void)xkb_state_update_mask(
             dummyStateNumlockNoShift,
             ((bind->eventStateMask & 0x1FFF) | gXCBNumLockMask) ^ XCB_KEY_BUT_MASK_SHIFT /* xkb_mod_mask_t base_mods, */,
             0 /* xkb_mod_mask_t latched_mods, */,
@@ -194,29 +194,26 @@ void key_binding_translate_keysyms(void)
             group /* xkb_layout_index_t locked_group, */);
 
         if (bind->keycode > 0) {
-            /* We need to specify modifiers for the keycode binding (numlock
-             * fallback). */
-            g_queue_clear_full (bind->keycodesHead.head, g_free);
-            g_queue_init (&(bind->keycodesHead));
+            while (!TAILQ_EMPTY(&(bind->keycodesHead))) {
+                GWMBindingKeycode* first = TAILQ_FIRST(&(bind->keycodesHead));
+                TAILQ_REMOVE(&(bind->keycodesHead), first, keycodes);
+                FREE(first);
+            }
 
             ADD_TRANSLATED_KEY(bind->keycode, bind->eventStateMask);
-
-            /* Also bind the key with active CapsLock */
             ADD_TRANSLATED_KEY(bind->keycode, bind->eventStateMask | XCB_MOD_MASK_LOCK);
-
-            /* If this binding is not explicitly for NumLock, check whether we need to
-             * add a fallback. */
             if ((bind->eventStateMask & gXCBNumLockMask) != gXCBNumLockMask) {
                 xkb_keysym_t sym = xkb_state_key_get_one_sym(dummyState, bind->keycode);
-                xkb_keysym_t symNumlock = xkb_state_key_get_one_sym(dummyStateNumlock, bind->keycode);
-                if (sym == symNumlock) {
+                xkb_keysym_t sym_numlock = xkb_state_key_get_one_sym(dummyStateNumlock, bind->keycode);
+                if (sym == sym_numlock) {
                     ADD_TRANSLATED_KEY(bind->keycode, bind->eventStateMask | gXCBNumLockMask);
                     ADD_TRANSLATED_KEY(bind->keycode, bind->eventStateMask | gXCBNumLockMask | XCB_MOD_MASK_LOCK);
                 }
                 else {
-                    DEBUG(_("Skipping automatic numlock fallback, key %d resolves to 0x%x with numlock"), bind->keycode, symNumlock);
+                    DEBUG("Skipping automatic numlock fallback, key %d resolves to 0x%x with numlock", bind->keycode, sym_numlock);
                 }
             }
+
             continue;
         }
 
@@ -234,38 +231,35 @@ void key_binding_translate_keysyms(void)
             .xkbStateNumlock = dummyStateNumlock,
             .xkbStateNumlockNoShift = dummyStateNumlockNoShift,
         };
-        g_queue_clear_full (&(bind->keycodesHead), g_free);
-        g_queue_init (&(bind->keycodesHead));
+        while (!TAILQ_EMPTY(&(bind->keycodesHead))) {
+            GWMBindingKeycode *first = TAILQ_FIRST(&(bind->keycodesHead));
+            TAILQ_REMOVE(&(bind->keycodesHead), first, keycodes);
+            FREE(first);
+        }
 
         xkb_keymap_key_for_each(gXKBKeymap, add_keycode_if_matches, &resolving);
         char* keycodes = g_strdup("");
         int numKeycodes = 0;
         GWMBindingKeycode* bindingKeycode = NULL;
-        for (GList* ls = bind->keycodesHead.head; ls; ls = ls->next) {
-            bindingKeycode = ls->data;
-            char* tmp = g_strdup_printf ("%s %d", keycodes, bindingKeycode->keycode);
+        TAILQ_FOREACH (bindingKeycode, &(bind->keycodesHead), keycodes) {
+            char* tmp = g_strdup_printf("%s %d", keycodes, bindingKeycode->keycode);
             free(keycodes);
             keycodes = tmp;
             numKeycodes++;
 
-            /* check for duplicate bindings */
             GWMBinding* check = NULL;
-            for (GList* ls1 = gBindings; ls1; ls1 = ls1->next) {
+            TAILQ_FOREACH (check, gBindings, bindings) {
                 if (check == bind) {
                     continue;
                 }
-
                 if (check->symbol != NULL) {
                     continue;
                 }
-
-                if (check->keycode != bindingKeycode->keycode
-                    || check->eventStateMask != bindingKeycode->modifiers
-                    || check->release != bind->release) {
+                if (check->keycode != bindingKeycode->keycode || check->eventStateMask != bindingKeycode->modifiers || check->release != bind->release) {
                     continue;
                 }
                 hasErrors = true;
-                ERROR(_("Duplicate keybinding in config file:\n  keysym = %s, keycode = %d, state_mask = 0x%x"), bind->symbol, check->keycode, bind->eventStateMask);
+                ERROR("Duplicate keybinding in config file:\n  keysym = %s, keycode = %d, state_mask = 0x%x", bind->symbol, check->keycode, bind->eventStateMask);
             }
         }
         DEBUG(_("state=0x%x, cfg=\"%s\", sym=0x%x → keycodes%s (%d)"), bind->eventStateMask, bind->symbol, keysym, keycodes, numKeycodes);
@@ -286,27 +280,26 @@ out:
 void key_binding_grab_all_keys(xcb_connection_t *conn)
 {
     GWMBinding* bind = NULL;
-    for (GList* ls1 = gBindings; ls1; ls1 = ls1->next) {
+    TAILQ_FOREACH (bind, gBindings, bindings) {
         if (bind->inputType != B_KEYBOARD) {
             continue;
         }
 
-        if (!binding_in_current_group(bind))
+        if (!binding_in_current_group(bind)) {
             continue;
+        }
 
-        /* The easy case: the user specified a keycode directly. */
         if (bind->keycode > 0) {
             grab_keycode_for_binding(conn, bind, bind->keycode);
             continue;
         }
 
-        GWMBindingKeycode* bindingKeycode = NULL;
-        for (GList* ls2 = bind->keycodesHead.head; ls2; ls2 = ls2->next) {
-            bindingKeycode = ls2->data;
-            const int keycode = bindingKeycode->keycode;
-            const unsigned int mods = (bindingKeycode->modifiers & 0xFFFF);
-            DEBUG(_("Binding %p Grabbing keycode %d with mods %d"), bind, keycode, mods);
-            xcb_grab_key(conn, 0, gRoot, mods, keycode, XCB_GRAB_MODE_SYNC, XCB_GRAB_MODE_ASYNC);
+        GWMBindingKeycode *binding_keycode;
+        TAILQ_FOREACH (binding_keycode, &(bind->keycodesHead), keycodes) {
+            const int keycode = binding_keycode->keycode;
+            const int mods = (binding_keycode->modifiers & 0xFFFF);
+            DEBUG("Binding %p Grabbing keycode %d with mods %d", bind, keycode, mods);
+            xcb_grab_key(conn, 0, gRoot, mods, keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC);
         }
     }
 }
@@ -415,19 +408,15 @@ void key_binding_free(GWMBinding *bind)
         return;
     }
 
-    g_queue_clear_full (&(bind->keycodesHead.head), g_free);
-    g_queue_init (&(bind->keycodesHead));
-    g_free (bind->symbol); bind->symbol = NULL;
-    g_free (bind->command); bind->command = NULL;
-//    for (GList* ls = bind->keycodesHead.head; ls; ls = ls->next) {
-//        GWMBindingKeycode* first = bind->keycodesHead.head->data; //TAILQ_FIRST(&(bind->keycodes_head));
-//        TAILQ_REMOVE(&(bind->keycodes_head), first, keycodes);
-//        FREE(first);
-//    }
-//    FREE(bind->symbol);
-//    FREE(bind->command);
-//    FREE(bind);
-    g_free (bind);
+    while (!TAILQ_EMPTY(&(bind->keycodesHead))) {
+        GWMBindingKeycode *first = TAILQ_FIRST(&(bind->keycodesHead));
+        TAILQ_REMOVE(&(bind->keycodesHead), first, keycodes);
+        FREE(first);
+    }
+
+    FREE(bind->symbol);
+    FREE(bind->command);
+    FREE(bind);
 }
 
 int *key_binding_get_buttons_to_grab(void)

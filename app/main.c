@@ -48,53 +48,49 @@ static void main_xcb_got_event          (EV_P_ struct ev_io *w, int rEvents);
 static void main_handle_term_signal     (struct ev_loop *loop, ev_signal *signal, int rEvents);
 
 
-bool                            gXKBSupported = false;
-bool                            gShapeSupported = false;
+bool                                    gXKBSupported = false;
+bool                                    gShapeSupported = false;
 
-int                             gListenFds;
+int                                     gListenFds;
+int                                     gXKBBase = 0;
+int                                     gShapeBase = 0;
+int                                     gRandrBase = -1;
+int                                     gXKBCurrentGroup;
+int                                     gXCBNubLockMask = 0;
+unsigned int                            gXCBNumLockMask = 0;
+char*                                   gCurConfigPath = NULL;
+const char*                             gCurrentBindingMode = NULL;
 
-int                             gXKBBase = 0;
-int                             gShapeBase = 0;
-int                             gRandrBase = -1;
-int                             gXKBCurrentGroup;
-int                             gXCBNubLockMask = 0;
+xcb_key_symbols_t*                      gKeySymbols;
 
-unsigned int                    gXCBNumLockMask = 0;
+xcb_atom_t                              gWMSn;
+xcb_atom_t                              gExtendWMHintsWindow;
+xcb_window_t                            gWMSnSelectionOwner;
 
-char*                           gCurConfigPath = NULL;
+xcb_colormap_t                          gColormap;
+uint8_t                                 gRootDepth = 0;
+xcb_visualtype_t*                       gVisualType = NULL;
 
-const char*                     gCurrentBindingMode = NULL;
+xcb_window_t                            gRoot = 0;
+int                                     gConnScreen = 0;
+xcb_timestamp_t                         gLastTimestamp = XCB_CURRENT_TIME;
 
-xcb_key_symbols_t*              gKeySymbols;
+xcb_connection_t*                       gConn = NULL;
+struct ev_loop*                         gMainLoop = NULL;
+SnDisplay*                              gSnDisplay = NULL;
+xcb_screen_t*                           gRootScreen = NULL;
 
-xcb_atom_t                      gWMSn;
-xcb_atom_t                      gExtendWMHintsWindow;
-xcb_window_t                    gWMSnSelectionOwner;
+const char*                             gLogPath = "/tmp/graceful-wm.log";
+struct ev_prepare*                      gXcbPrepare = NULL;
+GWMContainer*                           gContainerRoot = NULL;
+GWMContainer*                           gFocused = NULL;
 
-xcb_colormap_t                  gColormap;
-uint8_t                         gRootDepth = 0;
-xcb_visualtype_t*               gVisualType = NULL;
+GWMAllContainerHead                     gAllContainer = TAILQ_HEAD_INITIALIZER(gAllContainer);
+GWMWorkspaceAssignmentsHead             gWorkspaceAssignments = TAILQ_HEAD_INITIALIZER(gWorkspaceAssignments);
 
-xcb_window_t                    gRoot = 0;
-int                             gConnScreen = 0;
-xcb_timestamp_t                 gLastTimestamp = XCB_CURRENT_TIME;
-
-xcb_connection_t*               gConn = NULL;
-struct ev_loop*                 gMainLoop = NULL;
-SnDisplay*                      gSnDisplay = NULL;
-xcb_screen_t*                   gRootScreen = NULL;
-
-const char*                     gLogPath = "/tmp/graceful-wm.log";
-static struct ev_prepare*       gXcbPrepare = NULL;
-GWMContainer*                   gContainerRoot = NULL;
-GWMContainer*                   gFocused = NULL;
-GWMColorPixel*                  gColorPixels = NULL;
-
-GWMAllContainerHead             gAllContainer = TAILQ_HEAD_INITIALIZER(gAllContainer);
-GWMWorkspaceAssignmentsHead     gWorkspaceAssignments = TAILQ_HEAD_INITIALIZER(gWorkspaceAssignments);
-
-GSList*                         gConfigModes;                           // GWMConfigMode
-GList*                          gBindings;                              // GWMBinding
+GSList*                                 gConfigModes;                           // GWMConfigMode
+TAILQ_HEAD(bindingsHead, Binding)*      gBindings;
+SLIST_HEAD(colorPixelHead, ColorPixel)  gColorPixels;
 
 // 定义全局 atoms
 #define GWM_ATOM_MACRO(atom) xcb_atom_t A_##atom;

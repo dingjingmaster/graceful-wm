@@ -109,7 +109,7 @@ GWMColor draw_util_hex_to_color(const char *color)
         .colorPixel = draw_util_get_color_pixel(color)};
 }
 
-uint32_t draw_util_get_color_pixel(const char *hex)
+uint32_t draw_util_get_color_pixel(const char* hex)
 {
     char alpha[2];
     if (strlen(hex) == strlen("#rrggbbaa")) {
@@ -130,16 +130,14 @@ uint32_t draw_util_get_color_pixel(const char *hex)
     uint8_t b = strtol(strGroups[2], NULL, 16);
     uint8_t a = strtol(strGroups[3], NULL, 16);
 
-    /* Shortcut: if our screen is true color, no need to do a roundtrip to X11 */
     if (gRootScreen == NULL || gRootScreen->root_depth == 24 || gRootScreen->root_depth == 32) {
         return (a << 24) | (r << 16 | g << 8 | b);
     }
 
-    /* Lookup this color pixel in the cache */
-    for (GSList* ls = gColorPixels; ls; ls = ls->next) {
-        GWMColorPixel* cp = ls->data;
-        if (0 == g_strcmp0 (hex, cp->hex)) {
-            return cp->pixel;
+    GWMColorPixel *colorPixel;
+    SLIST_FOREACH (colorPixel, &(gColorPixels), colorPixels) {
+        if (strcmp(colorPixel->hex, hex) == 0) {
+            return colorPixel->pixel;
         }
     }
 
@@ -166,7 +164,7 @@ uint32_t draw_util_get_color_pixel(const char *hex)
     cachePixel->hex[7] = '\0';
     cachePixel->pixel = pixel;
 
-    gColorPixels = g_slist_append (gColorPixels, cachePixel);
+    SLIST_INSERT_HEAD(&(gColorPixels), cachePixel, colorPixels);
 
     return pixel;
 }

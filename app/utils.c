@@ -14,6 +14,7 @@
 
 #include <glib.h>
 #include <glib/gi18n.h>
+#include <ev.h>
 
 #include "log.h"
 #include "val.h"
@@ -194,4 +195,67 @@ bool util_name_is_digits(const char *name)
 int util_ws_name_to_number(const char *name)
 {
     return 0;
+}
+
+void util_main_set_x11_cb(bool enable)
+{
+    DEBUG("Setting main X11 callback to enabled=%d", enable)
+    if (enable) {
+        ev_prepare_start(gMainLoop,gXcbPrepare);
+        ev_feed_event(gMainLoop, gXcbPrepare, 0);
+    }
+    else {
+        ev_prepare_stop(gMainLoop, gXcbPrepare);
+    }
+}
+
+char* util_parse_string(const char **walk, bool asWord)
+{
+    const char *beginning = *walk;
+
+    if (**walk == '"') {
+        beginning++;
+        (*walk)++;
+        for (; **walk != '\0' && **walk != '"'; (*walk)++) {
+            if (**walk == '\\' && *(*walk + 1) != '\0') {
+                (*walk)++;
+            }
+        }
+    }
+    else {
+        if (!asWord) {
+            while (**walk != ';'
+                && **walk != ','
+                && **walk != '\0'
+                && **walk != '\r'
+                && **walk != '\n') {
+                (*walk)++;
+            }
+        }
+        else {
+            while (**walk != ' '
+                && **walk != '\t'
+                && **walk != ']'
+                && **walk != ','
+                && **walk != ';'
+                && **walk != '\r'
+                && **walk != '\n'
+                && **walk != '\0') {
+                (*walk)++;
+            }
+        }
+    }
+    if (*walk == beginning)
+        return NULL;
+
+    char *str = calloc(*walk - beginning + 1, 1);
+    int inpos, outpos;
+    for (inpos = 0, outpos = 0; inpos < (*walk - beginning); inpos++, outpos++) {
+        if (beginning[inpos] == '\\' && (beginning[inpos + 1] == '"' || beginning[inpos + 1] == '\\')) {
+            inpos++;
+        }
+        str[outpos] = beginning[inpos];
+    }
+
+    return str;
 }

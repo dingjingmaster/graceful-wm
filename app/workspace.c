@@ -8,6 +8,18 @@
 #include "output.h"
 #include "utils.h"
 #include "randr.h"
+#include "container.h"
+#include "x.h"
+#include "gaps.h"
+#include "extend-wm-hints.h"
+
+
+char* previous_workspace_name = NULL;
+static char** binding_workspace_names = NULL;
+
+
+static void _workspace_apply_default_orientation(GWMContainer* ws);
+
 
 void workspace_update_urgent_flag(GWMContainer *ws)
 {
@@ -46,7 +58,40 @@ void workspace_show(GWMContainer *ws)
 
 GWMContainer *workspace_get(const char *num)
 {
-    return NULL;
+    GWMContainer* workspace = workspace_get_existing_workspace_by_name(num);
+    if (workspace) {
+        return workspace;
+    }
+
+    INFO("Creating new workspace \"%s\"", num);
+
+    const int parsed_num = util_ws_name_to_number(num);
+
+    GWMContainer* output = workspace_get_assigned_output(num, parsed_num);
+    if (!output) {
+        output = container_get_output(gFocused);
+    }
+
+    workspace = container_new(NULL, NULL);
+
+    g_autofree char *name = g_strdup_printf ("[graceful-wm container] workspace %s", num);
+    x_set_name(workspace, name);
+
+    FREE(workspace->name);
+    workspace->name = g_strdup(num);
+    workspace->workspaceLayout = L_DEFAULT;
+    workspace->workspaceNum = parsed_num;
+    workspace->type = CT_WORKSPACE;
+    workspace->gaps = gaps_for_workspace(workspace);
+
+    container_attach(workspace, output_get_content(output), false);
+    _workspace_apply_default_orientation(workspace);
+
+//    ipc_send_workspace_event("init", workspace, NULL);
+//    ewmh_update_desktop_properties();
+    extend_wm_hint_update_desktop_properties();
+
+    return workspace;
 }
 
 void workspace_show_by_name(const char *num)
@@ -56,7 +101,59 @@ void workspace_show_by_name(const char *num)
 
 void workspace_extract_workspace_names_from_bindings(void)
 {
+    GWMBinding* bind = NULL;
+    int n = 0;
+    if (binding_workspace_names != NULL) {
+        for (int i = 0; binding_workspace_names[i] != NULL; i++) {
+            free(binding_workspace_names[i]);
+        }
+        FREE(binding_workspace_names);
+    }
+    TAILQ_FOREACH (bind, gBindings, bindings) {
+        DEBUG("binding with command %s", bind->command);
+        if (strlen(bind->command) < strlen("workspace ") || strncasecmp(bind->command, "workspace", strlen("workspace")) != 0) {
+            continue;
+        }
+        DEBUG("relevant command = %s", bind->command);
+        const char *target = bind->command + strlen("workspace ");
+        while (*target == ' ' || *target == '\t') {
+            target++;
+        }
+        if (strncasecmp(target, "next", strlen("next")) == 0
+            || strncasecmp(target, "prev", strlen("prev")) == 0
+            || strncasecmp(target, "next_on_output", strlen("next_on_output")) == 0
+            || strncasecmp(target, "prev_on_output", strlen("prev_on_output")) == 0
+            || strncasecmp(target, "back_and_forth", strlen("back_and_forth")) == 0
+            || strncasecmp(target, "current", strlen("current")) == 0) {
+            continue;
+        }
+        if (strncasecmp(target, "--no-auto-back-and-forth", strlen("--no-auto-back-and-forth")) == 0) {
+            target += strlen("--no-auto-back-and-forth");
+            while (*target == ' ' || *target == '\t') {
+                target++;
+            }
+        }
+        if (strncasecmp(target, "number", strlen("number")) == 0) {
+            target += strlen("number");
+            while (*target == ' ' || *target == '\t')
+                target++;
+        }
+        char *target_name = util_parse_string(&target, false);
+        if (target_name == NULL) {
+            continue;
+        }
+        if (strncasecmp(target_name, "__", strlen("__")) == 0) {
+            INFO("Cannot create workspace \"%s\". Names starting with __ are i3-internal.", target);
+            free(target_name);
+            continue;
+        }
+        DEBUG("Saving workspace name \"%s\"", target_name);
 
+        binding_workspace_names = realloc(binding_workspace_names, ++n * sizeof(char *));
+        binding_workspace_names[n - 1] = target_name;
+    }
+    binding_workspace_names = realloc(binding_workspace_names, ++n * sizeof(char *));
+    binding_workspace_names[n - 1] = NULL;
 }
 
 GWMContainer *workspace_next_on_output(void)
