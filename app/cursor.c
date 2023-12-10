@@ -39,7 +39,7 @@ void cursor_load_cursor(void)
 
 xcb_cursor_t cursor_get_cursor(GWMCursor cursor)
 {
-    g_return_val_if_fail(cursor >= CURSOR_POINTER && cursor <= CURSOR_MAX, CURSOR_POINTER);
+    g_return_val_if_fail(cursor >= CURSOR_POINTER && cursor < CURSOR_MAX, CURSOR_POINTER);
 
     return gCursors[cursor];
 }

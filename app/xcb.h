@@ -51,6 +51,7 @@ bool xcb_gwm_reply_contains_atom (xcb_get_property_reply_t* prop, xcb_atom_t ato
 void xcb_gwm_grab_buttons (xcb_connection_t* conn, xcb_window_t window, int* buttons);
 void xcb_gwm_set_window_rect (xcb_connection_t* conn, xcb_window_t window, GWMRect r);
 void xcb_gwm_add_property_atom (xcb_connection_t* conn, xcb_window_t window, xcb_atom_t property, xcb_atom_t atom);
+void xcb_gwm_fake_configure_notify(xcb_connection_t *conn, xcb_rectangle_t r, xcb_window_t window, int borderWidth);
 void xcb_gwm_remove_property_atom (xcb_connection_t* conn, xcb_window_t window, xcb_atom_t property, xcb_atom_t atom);
 xcb_window_t xcb_gwm_create_window (xcb_connection_t *conn, GWMRect r, uint16_t depth, xcb_visualid_t visual, uint16_t windowClass, GWMCursor cursor, bool map, uint32_t mask, uint32_t *values);
 
