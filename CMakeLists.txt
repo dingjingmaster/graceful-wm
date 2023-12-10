@@ -23,7 +23,7 @@ pkg_check_modules(PCRE REQUIRED libpcre2-8)
 pkg_check_modules(PANGO REQUIRED pango pangocairo)
 pkg_check_modules(XKB REQUIRED xkbcommon xkbcommon-x11)
 pkg_check_modules(SN REQUIRED libstartup-notification-1.0)
-pkg_check_modules(XCB REQUIRED xcb xcb-aux xcb-shape xcb-xkb xcb-keysyms xcb-xinerama xcb-xrm xcb-cursor)
+pkg_check_modules(XCB REQUIRED xcb xcb-aux xcb-shape xcb-xkb xcb-keysyms xcb-xinerama xcb-xrm xcb-cursor xcb-icccm)
 
 set(LIBS -lm -lX11 -lXmu -lev)
 

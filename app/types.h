@@ -605,6 +605,7 @@ typedef struct Window                       GWMWindow;                  // ok
 typedef struct Surface                      GWMSurface;                 // ok
 typedef struct Binding                      GWMBinding;                 // ok
 typedef struct Container                    GWMContainer;               // ok
+typedef struct Colortriple                  GWMColoriple;               // ok
 typedef struct OutputHead                   GWMOutputHead;              // ok
 typedef struct ColorPixel                   GWMColorPixel;              // ok
 typedef struct OutputName                   GWMOutputName;              // ok
@@ -908,6 +909,16 @@ struct Font
         PangoFontDescription*                   pangoDesc;           // The pango font description
     } specific;
 };
+
+struct Colortriple
+{
+    GWMColor border;
+    GWMColor background;
+    GWMColor text;
+    GWMColor indicator;
+    GWMColor child_border;
+};
+
 
 struct DecorationRenderParams
 {

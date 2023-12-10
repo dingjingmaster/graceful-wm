@@ -30,6 +30,7 @@ void x_set_name                 (GWMContainer* con, const char* name);
 void x_set_gwm_atoms            (void);
 void x_set_warp_to              (GWMRect* rect);
 void x_set_shape                (GWMContainer* con, xcb_shape_sk_t kind, bool enable);
-
+void x_mask_event_mask          (uint32_t mask);
+void x_update_shmlog_atom       (void);
 
 #endif //GRACEFUL_WM_X_H

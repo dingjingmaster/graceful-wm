@@ -29,6 +29,7 @@ static bool surface_initialized(GWMSurface* surface);
 static PangoLayout* create_layout_with_dpi(cairo_t *cr);
 static void util_set_source_color(GWMSurface* surface, GWMColor color);
 static int xcb_query_text_width(const xcb_char2b_t* text, size_t textLen);
+static void draw_util_set_source_color(GWMSurface* surface, GWMColor color);
 static int predict_text_width_xcb(const xcb_char2b_t *input, size_t textLen);
 static xcb_gcontext_t get_gc(xcb_connection_t *conn, uint8_t depth, xcb_drawable_t drawable, bool* shouldFree);
 static void draw_text_xcb(const xcb_char2b_t* text, size_t textLen, xcb_drawable_t drawable, xcb_gcontext_t gc, int x, int y);
@@ -252,6 +253,41 @@ uint16_t draw_util_get_visual_depth(xcb_visualid_t visualID)
     return 0;
 }
 
+void draw_util_rectangle(GWMSurface* surface, GWMColor color, double x, double y, double w, double h)
+{
+    if (!surface_initialized(surface)) {
+        return;
+    }
+
+    cairo_save(surface->cairo);
+
+    cairo_set_operator(surface->cairo, CAIRO_OPERATOR_SOURCE);
+    draw_util_set_source_color(surface, color);
+
+    cairo_rectangle(surface->cairo, x, y, w, h);
+    cairo_fill(surface->cairo);
+
+    CAIRO_SURFACE_FLUSH(surface->surface);
+
+    cairo_restore(surface->cairo);
+}
+
+void draw_util_clear_surface(GWMSurface* surface, GWMColor color)
+{
+    if (!surface_initialized(surface)) {
+        return;
+    }
+
+    cairo_save(surface->cairo);
+    cairo_set_operator(surface->cairo, CAIRO_OPERATOR_SOURCE);
+    draw_util_set_source_color(surface, color);
+    cairo_paint(surface->cairo);
+
+    CAIRO_SURFACE_FLUSH(surface->surface);
+
+    cairo_restore(surface->cairo);
+}
+
 
 static bool surface_initialized(GWMSurface* surface)
 {
@@ -463,3 +499,13 @@ static PangoLayout* create_layout_with_dpi(cairo_t *cr)
 
     return layout;
 }
+
+static void draw_util_set_source_color(GWMSurface* surface, GWMColor color)
+{
+    if (!surface_initialized(surface)) {
+        return;
+    }
+
+    cairo_set_source_rgba(surface->cairo, color.red, color.green, color.blue, color.alpha);
+}
+

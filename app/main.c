@@ -59,7 +59,11 @@ int                                     gXKBCurrentGroup;
 int                                     gXCBNubLockMask = 0;
 unsigned int                            gXCBNumLockMask = 0;
 char*                                   gCurConfigPath = NULL;
+char*                                   gShmLogName = "";
+char*                                   gCurrentConfigPath = NULL;
+char*                                   gCurrentSocketPath = NULL;
 const char*                             gCurrentBindingMode = NULL;
+char*                                   gCurrentLogStreamSocketPath = NULL;
 
 xcb_key_symbols_t*                      gKeySymbols;
 
@@ -92,6 +96,7 @@ GWMWorkspaceAssignmentsHead             gWorkspaceAssignments = TAILQ_HEAD_INITI
 GSList*                                 gConfigModes;                           // GWMConfigMode
 TAILQ_HEAD(bindingsHead, Binding)*      gBindings = NULL;
 SLIST_HEAD(colorPixelHead, ColorPixel)  gColorPixels;
+xcb_window_t                            gFocusedID = XCB_NONE;
 
 // 定义全局 atoms
 #define GWM_ATOM_MACRO(atom) xcb_atom_t A_##atom;

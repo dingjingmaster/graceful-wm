@@ -24,6 +24,7 @@ extern xcb_connection_t*                        gConn;
 extern GWMContainer*                            gFocused;
 extern struct ev_loop*                          gMainLoop;
 extern xcb_colormap_t                           gColormap;
+extern xcb_window_t                             gFocusedID;
 extern SnDisplay*                               gSnDisplay;
 extern xcb_screen_t*                            gRootScreen;
 extern xcb_visualtype_t*                        gVisualType;
@@ -38,8 +39,13 @@ extern GWMAllContainerHead                      gAllContainer;
 extern unsigned int                             gXCBNumLockMask;
 extern GWMWorkspaceAssignmentsHead              gWorkspaceAssignments;
 
+extern char*                                    gShmLogName;
 extern char*                                    gCurConfigPath;
+extern char*                                    gCurrentSocketPath;
+extern char*                                    gCurrentConfigPath;
 extern const char*                              gCurrentBindingMode;
+extern char*                                    gCurrentLogStreamSocketPath;
+
 extern TAILQ_HEAD(bindingsHead, Binding)*       gBindings;
 extern SLIST_HEAD(colorPixelHead, ColorPixel)   gColorPixels;
 
