@@ -31,7 +31,7 @@ GWMContainer* workspace_get_existing_workspace_by_name(const char *name);
 GWMContainer* workspace_get_assigned_output(const char *name, long parsed_num);
 void workspace_ws_force_orientation(GWMContainer* ws, GWMOrientation orientation);
 GWMContainer* workspace_create_workspace_on_output(GWMOutput* output, GWMContainer* content);
-bool workspace_output_triggers_assignment(GWMOutput *output, struct workspace_Assignment *assignment);
+bool workspace_output_triggers_assignment(GWMOutput *output, GWMWorkspaceAssignment *assignment);
 
 
 #endif //GRACEFUL_WM_workspace_H
