@@ -9,6 +9,7 @@
 #include "types.h"
 #include "randr.h"
 #include "container.h"
+#include "workspace.h"
 
 
 GWMContainer *output_get_content(GWMContainer *output)
@@ -32,42 +33,34 @@ char *output_primary_name(GWMOutput *output)
 
 void output_push_sticky_windows(GWMContainer *oldFocus)
 {
-//    for (GList* ls = gContainerRoot->focusHead.head; ls; ls = ls->next) {
-//        GWMContainer* output = ls->data;
-//        GWMContainer* workspace, *visible_ws = NULL;
-//        GREP_FIRST(visible_ws, output_get_content(output), workspace_is_visible(child));
-//
-//        /* We use this loop instead of TAILQ_FOREACH to avoid problems if the
-//         * sticky window was the last window on that workspace as moving it in
-//         * this case will close the workspace. */
-//        for (workspace = TAILQ_FIRST(&(output_get_content(output)->focus_head));
-//             workspace != TAILQ_END(&(output_get_content(output)->focus_head));) {
-//            Con *current_ws = workspace;
-//            workspace = TAILQ_NEXT(workspace, focused);
-//
-//            /* Since moving the windows actually removes them from the list of
-//             * floating windows on this workspace, here too we need to use
-//             * another loop than TAILQ_FOREACH. */
-//            Con *child;
-//            for (child = TAILQ_FIRST(&(current_ws->focus_head));
-//                 child != TAILQ_END(&(current_ws->focus_head));) {
-//                Con *current = child;
-//                child = TAILQ_NEXT(child, focused);
-//                if (current->type != CT_FLOATING_CON || !con_is_sticky(current)) {
-//                    continue;
-//                }
-//
-//                bool ignore_focus = (old_focus == NULL) || (current != old_focus->parent);
-//                con_move_to_workspace(current, visible_ws, true, false, ignore_focus);
-//                if (!ignore_focus) {
-//                    Con *current_ws = con_get_workspace(focused);
-//                    con_activate(con_descend_focused(current));
-//                    /* Pushing sticky windows shouldn't change the focused workspace. */
-//                    con_activate(con_descend_focused(current_ws));
-//                }
-//            }
-//        }
-//    }
+    GWMContainer* output;
+    TAILQ_FOREACH (output, &(gContainerRoot->focusHead), focused) {
+        GWMContainer* workspace, *visible_ws = NULL;
+        GREP_FIRST(visible_ws, output_get_content(output), workspace_is_visible(child));
+
+        for (workspace = TAILQ_FIRST(&(output_get_content(output)->focusHead));
+                workspace != TAILQ_END(&(output_get_content(output)->focusHead));) {
+            GWMContainer* current_ws = workspace;
+            workspace = TAILQ_NEXT(workspace, focused);
+
+            GWMContainer* child;
+            for (child = TAILQ_FIRST(&(current_ws->focusHead)); child != TAILQ_END(&(current_ws->focusHead));) {
+                GWMContainer* current = child;
+                child = TAILQ_NEXT(child, focused);
+                if (current->type != CT_FLOATING_CON || !container_is_sticky(current)) {
+                    continue;
+                }
+
+                bool ignore_focus = (oldFocus == NULL) || (current != oldFocus->parent);
+                container_move_to_workspace(current, visible_ws, true, false, ignore_focus);
+                if (!ignore_focus) {
+                    GWMContainer* current_ws = container_get_workspace(gFocused);
+                    container_activate(container_descend_focused(current));
+                    container_activate(container_descend_focused(current_ws));
+                }
+            }
+        }
+    }
 }
 
 GWMOutput *output_get_output_for_con(GWMContainer *con)
