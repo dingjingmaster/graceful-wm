@@ -128,12 +128,12 @@ void x_move_window(GWMContainer *src, GWMContainer *dest)
     GWMContainerState* state_src, *state_dest;
 
     if ((state_src = state_for_frame(src->frame.id)) == NULL) {
-        ERROR("window state for src not found\n");
+        ERROR("window state for src not found");
         return;
     }
 
     if ((state_dest = state_for_frame(dest->frame.id)) == NULL) {
-        ERROR("window state for dest not found\n");
+        ERROR("window state for dest not found");
         return;
     }
 
@@ -319,12 +319,12 @@ void x_draw_decoration(GWMContainer *con)
 
     surface_t *dest_surface = &(parent->frame_buffer);
     if (con_draw_decoration_into_frame(con)) {
-        DLOG("using con->frame_buffer (for con->name=%s) as dest_surface\n", con->name);
+        DLOG("using con->frame_buffer (for con->name=%s) as dest_surface", con->name);
         dest_surface = &(con->frame_buffer);
     } else {
-        DLOG("sticking to parent->frame_buffer = %p\n", dest_surface);
+        DLOG("sticking to parent->frame_buffer = %p", dest_surface);
     }
-    DLOG("dest_surface %p is %d x %d (id=0x%08x)\n", dest_surface, dest_surface->width, dest_surface->height, dest_surface->id);
+    DLOG("dest_surface %p is %d x %d (id=0x%08x)", dest_surface, dest_surface->width, dest_surface->height, dest_surface->id);
 
     /* If the parent hasn't been set up yet, skip the decoration rendering
      * for now. */
@@ -344,7 +344,7 @@ void x_draw_decoration(GWMContainer *con)
         goto copy_pixmaps;
 
     /* 4: paint the bar */
-    DLOG("con->deco_rect = (x=%d, y=%d, w=%d, h=%d) for con->name=%s\n",
+    DLOG("con->deco_rect = (x=%d, y=%d, w=%d, h=%d) for con->name=%s",
          con->deco_rect.x, con->deco_rect.y, con->deco_rect.width, con->deco_rect.height, con->name);
     draw_util_rectangle(dest_surface, p->color->background,
                         con->deco_rect.x, con->deco_rect.y, con->deco_rect.width, con->deco_rect.height);
@@ -458,7 +458,7 @@ void x_draw_decoration(GWMContainer *con)
             icon_offset_x = min(deco_width - icon_size - icon_padding - title_padding, title_offset_x + predict_text_width(title) + icon_padding);
             break;
         default:
-            ELOG("BUG: invalid config.title_align value %d\n", config.title_align);
+            ELOG("BUG: invalid config.title_align value %d", config.title_align);
             return;
     }
 
@@ -521,7 +521,7 @@ void x_push_node(GWMContainer *con)
     state = state_for_frame(con->frame.id);
 
     if (state->name != NULL) {
-        DEBUG("pushing name %s for con %p\n", state->name, con);
+        DEBUG("pushing name %s for con %p", state->name, con);
         xcb_change_property(gConn, XCB_PROP_MODE_REPLACE, con->frame.id, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8, strlen(state->name), state->name);
         FREE(state->name);
     }
@@ -547,7 +547,7 @@ void x_push_node(GWMContainer *con)
     bool need_reshape = false;
 
     if (state->needReparent && con->window != NULL) {
-        DEBUG("Reparenting child window\n");
+        DEBUG("Reparenting child window");
         uint32_t values[] = {XCB_NONE};
         xcb_change_window_attributes(gConn, state->oldFrame, XCB_CW_EVENT_MASK, values);
         xcb_change_window_attributes(gConn, con->window->id, XCB_CW_EVENT_MASK, values);
@@ -562,7 +562,7 @@ void x_push_node(GWMContainer *con)
         state->needReparent = false;
 
         con->ignoreUnmap++;
-        DEBUG("ignore_unmap for reparenting of con %p (win 0x%08x) is now %d\n", con, con->window->id, con->ignoreUnmap);
+        DEBUG("ignore_unmap for reparenting of con %p (win 0x%08x) is now %d", con, con->window->id, con->ignoreUnmap);
 
         need_reshape = true;
     }
@@ -575,7 +575,7 @@ void x_push_node(GWMContainer *con)
     need_reshape |= container_is_floating(con) && !state->wasFloating;
 
     bool is_pixmap_needed = ((container_is_leaf(con) && container_border_style(con) != BS_NONE) || con->layout == L_STACKED || con->layout == L_TABBED);
-    DEBUG("Con %p (layout %d), is_pixmap_needed = %s, rect.height = %d\n", con, con->layout, is_pixmap_needed ? "yes" : "no", con->rect.height);
+    DEBUG("Con %p (layout %d), is_pixmap_needed = %s, rect.height = %d", con, con->layout, is_pixmap_needed ? "yes" : "no", con->rect.height);
 
     if (con->type == CT_ROOT || con->type == CT_OUTPUT) {
         is_pixmap_needed = false;
@@ -607,7 +607,7 @@ void x_push_node(GWMContainer *con)
             int width = MAX((int32_t)rect.width, 1);
             int height = MAX((int32_t)rect.height, 1);
 
-            DEBUG("creating %d x %d pixmap for con %p (con->frame_buffer.id = (pixmap_t)0x%08x) (con->frame.id (drawable_t)0x%08x)\n", width, height, con, con->frameBuffer.id, con->frame.id);
+            DEBUG("creating %d x %d pixmap for con %p (con->frame_buffer.id = (pixmap_t)0x%08x) (con->frame.id (drawable_t)0x%08x)", width, height, con, con->frameBuffer.id, con->frame.id);
             xcb_create_pixmap(gConn, win_depth, con->frameBuffer.id, con->frame.id, width, height);
             draw_util_surface_init(gConn, &(con->frameBuffer), con->frameBuffer.id, xcb_gwm_get_visual_type_by_id(xcb_gwm_get_visualid_by_depth(win_depth)), width, height);
             draw_util_clear_surface(&(con->frameBuffer), (GWMColor ){.red = 0.0, .green = 0.0, .blue = 0.0});
@@ -622,7 +622,7 @@ void x_push_node(GWMContainer *con)
             }
         }
 
-        DEBUG("setting rect (%d, %d, %d, %d)\n", rect.x, rect.y, rect.width, rect.height);
+        DEBUG("setting rect (%d, %d, %d, %d)", rect.x, rect.y, rect.width, rect.height);
         xcb_flush(gConn);
         xcb_gwm_set_window_rect(gConn, con->frame.id, rect);
         if (con->frameBuffer.id != XCB_NONE) {
@@ -635,7 +635,7 @@ void x_push_node(GWMContainer *con)
     }
 
     if (con->window != NULL && !util_rect_equals(state->windowRect, con->windowRect)) {
-        DEBUG("setting window rect (%d, %d, %d, %d)\n", con->windowRect.x, con->windowRect.y, con->windowRect.width, con->windowRect.height);
+        DEBUG("setting window rect (%d, %d, %d, %d)", con->windowRect.x, con->windowRect.y, con->windowRect.width, con->windowRect.height);
         xcb_gwm_set_window_rect(gConn, con->window->id, con->windowRect);
         memcpy(&(state->windowRect), &(con->windowRect), sizeof(GWMRect));
         fake_notify = true;
@@ -656,7 +656,7 @@ void x_push_node(GWMContainer *con)
             cookie = xcb_map_window(gConn, con->window->id);
             values[0] = CHILD_EVENT_MASK;
             xcb_change_window_attributes(gConn, con->window->id, XCB_CW_EVENT_MASK, values);
-            DEBUG("mapping child window (serial %d)\n", cookie.sequence);
+            DEBUG("mapping child window (serial %d)", cookie.sequence);
             state->childMapped = true;
         }
 
@@ -670,7 +670,7 @@ void x_push_node(GWMContainer *con)
         }
         xcb_flush(gConn);
 
-        DEBUG("mapping container %08x (serial %d)\n", con->frame.id, cookie.sequence);
+        DEBUG("mapping container %08x (serial %d)", con->frame.id, cookie.sequence);
         state->mapped = con->mapped;
     }
 
@@ -678,7 +678,7 @@ void x_push_node(GWMContainer *con)
     state->wasFloating = container_is_floating(con);
 
     if (fake_notify) {
-        DEBUG("Sending fake configure notify\n");
+        DEBUG("Sending fake configure notify");
         xcb_gwm_fake_absolute_configure_notify(con);
     }
 
@@ -701,7 +701,7 @@ void x_push_changes(GWMContainer *con)
         pointercookie = xcb_query_pointer(gConn, gRoot);
     }
 
-    DEBUG("-- PUSHING WINDOW STACK --\n");
+    DEBUG("-- PUSHING WINDOW STACK --");
     uint32_t values[1] = {XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT};
     CIRCLEQ_FOREACH_REVERSE (state, &gStateHead, state) {
         if (state->mapped) {
@@ -751,7 +751,7 @@ void x_push_changes(GWMContainer *con)
     }
 
     if (stacking_changed) {
-        DEBUG("Client list changed (%i clients)\n", cnt);
+        DEBUG("Client list changed (%i clients)", cnt);
         extend_wm_hint_update_client_list_stacking(client_list_windows, client_list_count);
         walk = client_list_windows;
         TAILQ_FOREACH (state, &gInitialMappingHead, initialMappingOrder) {
@@ -762,13 +762,13 @@ void x_push_changes(GWMContainer *con)
         extend_wm_hint_update_client_list(client_list_windows, client_list_count);
     }
 
-    DEBUG("PUSHING CHANGES\n");
+    DEBUG("PUSHING CHANGES");
     x_push_node(con);
 
     if (gWarpTo) {
         xcb_query_pointer_reply_t *pointerreply = xcb_query_pointer_reply(gConn, pointercookie, NULL);
         if (!pointerreply) {
-            ERROR("Could not query pointer position, not warping pointer\n");
+            ERROR("Could not query pointer position, not warping pointer");
         }
         else {
             int mid_x = gWarpTo->x + (gWarpTo->width / 2);
@@ -816,7 +816,7 @@ void x_push_changes(GWMContainer *con)
                 }
             }
             else {
-                DEBUG("Updating focus (focused: %p / %s) to X11 window 0x%08x\n", gFocused, gFocused->name, to_focus);
+                DEBUG("Updating focus (focused: %p / %s) to X11 window 0x%08x", gFocused, gFocused->name, to_focus);
                 if (gFocused->window != NULL) {
                     values[0] = CHILD_EVENT_MASK & ~(XCB_EVENT_MASK_FOCUS_CHANGE);
                     xcb_change_window_attributes(gConn, gFocused->window->id, XCB_CW_EVENT_MASK, values);
@@ -837,7 +837,7 @@ void x_push_changes(GWMContainer *con)
     }
 
     if (gFocusedID == XCB_NONE) {
-        DEBUG("Still no window focused, better set focus to the EWMH support window (%d)\n", gExtendWMHintsWindow);
+        DEBUG("Still no window focused, better set focus to the EWMH support window (%d)", gExtendWMHintsWindow);
         xcb_set_input_focus(gConn, XCB_INPUT_FOCUS_POINTER_ROOT, gExtendWMHintsWindow, gLastTimestamp);
         change_ewmh_focus(XCB_WINDOW_NONE, gLastFocused);
 
@@ -846,7 +846,7 @@ void x_push_changes(GWMContainer *con)
     }
 
     xcb_flush(gConn);
-    DEBUG("ENDING CHANGES\n");
+    DEBUG("ENDING CHANGES");
 
     values[0] = FRAME_EVENT_MASK & ~XCB_EVENT_MASK_ENTER_WINDOW;
     CIRCLEQ_FOREACH_REVERSE (state, &gStateHead, state) {
@@ -908,7 +908,7 @@ void x_set_shape(GWMContainer *con, xcb_shape_sk_t kind, bool enable)
 {
     struct con_state *state;
     if ((state = state_for_frame(con->frame.id)) == NULL) {
-        ERROR("window state for con %p not found\n", con);
+        ERROR("window state for con %p not found", con);
         return;
     }
 
@@ -922,7 +922,7 @@ void x_set_shape(GWMContainer *con, xcb_shape_sk_t kind, bool enable)
             break;
         }
         default: {
-            ERROR("Received unknown shape event kind for con %p. This is a bug.\n", con);
+            ERROR("Received unknown shape event kind for con %p. This is a bug.", con);
             return;
         }
     }
@@ -962,7 +962,7 @@ void x_window_kill(xcb_window_t window, GWMKillWindow killWindow)
     ev->data.data32[0] = A_WM_DELETE_WINDOW;
     ev->data.data32[1] = XCB_CURRENT_TIME;
 
-    INFO("Sending WM_DELETE to the client\n");
+    INFO("Sending WM_DELETE to the client");
     xcb_send_event(gConn, false, window, XCB_EVENT_MASK_NO_EVENT, (char *)ev);
     xcb_flush(gConn);
     free(event);
@@ -1162,10 +1162,10 @@ static void set_hidden_state(GWMContainer* con)
     }
 
     if (should_be_hidden) {
-        DEBUG("setting _NET_WM_STATE_HIDDEN for con = %p\n", con);
+        DEBUG("setting _NET_WM_STATE_HIDDEN for con = %p", con);
         xcb_gwm_add_property_atom(gConn, con->window->id, A__NET_WM_STATE, A__NET_WM_STATE_HIDDEN);
     } else {
-        DEBUG("removing _NET_WM_STATE_HIDDEN for con = %p\n", con);
+        DEBUG("removing _NET_WM_STATE_HIDDEN for con = %p", con);
         xcb_gwm_remove_property_atom(gConn, con->window->id, A__NET_WM_STATE, A__NET_WM_STATE_HIDDEN);
     }
 
@@ -1199,7 +1199,7 @@ static void set_shape_state(GWMContainer* con, bool need_reshape)
 
     GWMContainerState *state;
     if ((state = state_for_frame(con->frame.id)) == NULL) {
-        ERROR("window state for con %p not found\n", con);
+        ERROR("window state for con %p not found", con);
         return;
     }
 
@@ -1237,10 +1237,10 @@ static void x_push_node_unmaps(GWMContainer* con)
         }
 
         cookie = xcb_unmap_window(gConn, con->frame.id);
-        DEBUG("unmapping container %p / %s (serial %d)\n", con, con->name, cookie.sequence);
+        DEBUG("unmapping container %p / %s (serial %d)", con, con->name, cookie.sequence);
         if (con->window != NULL) {
             con->ignoreUnmap++;
-            DEBUG("ignore_unmap for con %p (frame 0x%08x) now %d\n", con, con->frame.id, con->ignoreUnmap);
+            DEBUG("ignore_unmap for con %p (frame 0x%08x) now %d", con, con->frame.id, con->ignoreUnmap);
         }
         state->mapped = con->mapped;
     }

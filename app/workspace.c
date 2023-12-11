@@ -43,7 +43,7 @@ void workspace_update_urgent_flag(GWMContainer *ws)
 GWMContainer* workspace_encapsulate(GWMContainer* ws)
 {
     if (TAILQ_EMPTY(&(ws->nodesHead))) {
-        ERROR("Workspace %p / %s has no children to encapsulate\n", ws, ws->name);
+        ERROR("Workspace %p / %s has no children to encapsulate", ws, ws->name);
         return NULL;
     }
 
@@ -288,10 +288,10 @@ void workspace_show(GWMContainer* workspace)
 
 //    ipc_send_workspace_event("focus", workspace, current);
 
-    DEBUG("old = %p / %s\n", old, (old ? old->name : "(null)"));
+    DEBUG("old = %p / %s", old, (old ? old->name : "(null)"));
     if (old && TAILQ_EMPTY(&(old->nodesHead)) && TAILQ_EMPTY(&(old->floatingHead))) {
         if (!workspace_is_visible(old)) {
-            DEBUG("Closing old workspace (%p / %s), it is empty\n", old, old->name);
+            DEBUG("Closing old workspace (%p / %s), it is empty", old, old->name);
 //            yajl_gen gen = ipc_marshal_workspace_event("empty", old, NULL);
 //            tree_close_internal(old, DONT_KILL_WINDOW, false);
 //
@@ -312,7 +312,7 @@ void workspace_show(GWMContainer* workspace)
     }
 
     workspace->fullScreenMode = CF_OUTPUT;
-    DEBUG("focused now = %p / %s\n", gFocused, gFocused->name);
+    DEBUG("focused now = %p / %s", gFocused, gFocused->name);
 
     GWMContainer* new_output = container_get_output(gFocused);
     if (old_output != new_output) {
@@ -549,14 +549,14 @@ GWMContainer *workspace_back_and_forth_get(void)
 
 GWMContainer *workspace_attach_to(GWMContainer *ws)
 {
-    DEBUG("Attaching a window to workspace %p / %s\n", ws, ws->name);
+    DEBUG("Attaching a window to workspace %p / %s", ws, ws->name);
 
     if (ws->workspaceLayout == L_DEFAULT) {
-        DEBUG("Default layout, just attaching it to the workspace itself.\n");
+        DEBUG("Default layout, just attaching it to the workspace itself.");
         return ws;
     }
 
-    DEBUG("Non-default layout, creating a new split container\n");
+    DEBUG("Non-default layout, creating a new split container");
     /* 1: create a new split container */
     GWMContainer* new = container_new(NULL, NULL);
     new->parent = ws;
@@ -565,7 +565,7 @@ GWMContainer *workspace_attach_to(GWMContainer *ws)
     new->layout = ws->workspaceLayout;
 
     /* 4: attach the new split container to the workspace */
-    DEBUG("Attaching new split %p to workspace %p\n", new, ws);
+    DEBUG("Attaching new split %p to workspace %p", new, ws);
     container_attach(new, ws, false);
 
     /* 5: fix the percentages */
@@ -586,14 +586,14 @@ GWMContainer *workspace_get_existing_workspace_by_num(int num)
 
 void workspace_move_to_output(GWMContainer *ws, GWMOutput *output)
 {
-    DEBUG("Moving workspace %p / %s to output %p / \"%s\".\n", ws, ws->name, output, output_primary_name(output));
+    DEBUG("Moving workspace %p / %s to output %p / \"%s\".", ws, ws->name, output, output_primary_name(output));
 
     GWMOutput *current_output = output_get_output_for_con(ws);
     GWMContainer* content = output_get_content(output->container);
-    DEBUG("got output %p with content %p\n", output, content);
+    DEBUG("got output %p with content %p", output, content);
 
     if (ws->parent == content) {
-        DEBUG("Nothing to do, workspace already there\n");
+        DEBUG("Nothing to do, workspace already there");
         return;
     }
 
@@ -607,7 +607,7 @@ void workspace_move_to_output(GWMContainer *ws, GWMOutput *output)
 
     bool workspace_was_visible = workspace_is_visible(ws);
     if (container_num_children(ws->parent) == 1) {
-        DEBUG("Creating a new workspace to replace \"%s\" (last on its output).\n", ws->name);
+        DEBUG("Creating a new workspace to replace \"%s\" (last on its output).", ws->name);
 
         /* check if we can find a workspace assigned to this output */
         bool used_assignment = false;
@@ -623,7 +623,7 @@ void workspace_move_to_output(GWMContainer *ws, GWMOutput *output)
             }
 
             /* so create the workspace referenced to by this assignment */
-            DEBUG("Creating workspace from assignment %s.\n", assignment->name);
+            DEBUG("Creating workspace from assignment %s.", assignment->name);
             workspace_get(assignment->name);
             used_assignment = true;
             break;
@@ -634,14 +634,14 @@ void workspace_move_to_output(GWMContainer *ws, GWMOutput *output)
         }
     }
 
-    DEBUG("Detaching\n");
+    DEBUG("Detaching");
 
     /* detach from the old output and attach to the new output */
     GWMContainer* old_content = ws->parent;
     container_detach(ws);
     if (workspace_was_visible) {
         GWMContainer* focus_ws = TAILQ_FIRST(&(old_content->focusHead));
-        DEBUG("workspace was visible, focusing %p / %s now\n", focus_ws, focus_ws->name);
+        DEBUG("workspace was visible, focusing %p / %s now", focus_ws, focus_ws->name);
         workspace_show(focus_ws);
     }
     container_attach(ws, content, false);
@@ -693,7 +693,7 @@ GWMContainer *workspace_get_assigned_output(const char *name, long parsed_num)
         }
 
         if (name && strcmp(assignment->name, name) == 0) {
-            DEBUG ("Found workspace name=\"%s\" assignment to output \"%s\"\n", name, assignment->output);
+            DEBUG ("Found workspace name=\"%s\" assignment to output \"%s\"", name, assignment->output);
             GWMOutput *assigned_by_name = randr_get_output_by_name(assignment->output, true);
             if (assigned_by_name) {
                 return assigned_by_name->container;
@@ -723,7 +723,7 @@ void workspace_ws_force_orientation(GWMContainer *ws, GWMOrientation orientation
     /* 3: move the existing cons of this workspace below the new con */
     GWMContainer** focusOrder = container_get_focus_order(ws);
 
-    DEBUG("Moving cons\n");
+    DEBUG("Moving cons");
     while (!TAILQ_EMPTY(&(ws->nodesHead))) {
         GWMContainer* child = TAILQ_FIRST(&(ws->nodesHead));
         container_detach(child);
@@ -735,10 +735,10 @@ void workspace_ws_force_orientation(GWMContainer *ws, GWMOrientation orientation
 
     /* 4: switch workspace layout */
     ws->layout = (orientation == HORIZON) ? L_SPLIT_H : L_SPLIT_V;
-    DEBUG("split->layout = %d, ws->layout = %d\n", split->layout, ws->layout);
+    DEBUG("split->layout = %d, ws->layout = %d", split->layout, ws->layout);
 
     /* 5: attach the new split container to the workspace */
-    DEBUG("Attaching new split (%p) to ws (%p)\n", split, ws);
+    DEBUG("Attaching new split (%p) to ws (%p)", split, ws);
     container_attach(split, ws, false);
 
     /* 6: fix the percentages */
@@ -763,19 +763,19 @@ GWMContainer *workspace_create_workspace_on_output(GWMOutput *output, GWMContain
         if (!exists) {
             ws->name = g_strdup(target_name);
             ws->workspaceNum = num;
-            DEBUG("Used number %d for workspace with name %s\n", ws->workspaceNum, ws->name);
+            DEBUG("Used number %d for workspace with name %s", ws->workspaceNum, ws->name);
             break;
         }
     }
 
     if (exists) {
-        DEBUG("Getting next unused workspace by number\n");
+        DEBUG("Getting next unused workspace by number");
         int c = 0;
         while (exists) {
             c++;
             GWMContainer* assigned = workspace_get_assigned_output(NULL, c);
             exists = (workspace_get_existing_workspace_by_num(c) || (assigned && assigned != output->container));
-            DEBUG("result for ws %d: exists = %d\n", c, exists);
+            DEBUG("result for ws %d: exists = %d", c, exists);
         }
         ws->workspaceNum = c;
         ws->name = g_strdup_printf ("%d", c);
@@ -812,7 +812,7 @@ static void _workspace_apply_default_orientation(GWMContainer* ws)
 //        Con *output = con_get_output(ws);
 //        ws->layout = (output->rect.height > output->rect.width) ? L_SPLITV : L_SPLITH;
 //        ws->rect = output->rect;
-//        DLOG("Auto orientation. Workspace size set to (%d,%d), setting layout to %d.\n",
+//        DLOG("Auto orientation. Workspace size set to (%d,%d), setting layout to %d.",
 //             output->rect.width, output->rect.height, ws->layout);
 //    } else {
 //        ws->layout = (config.default_orientation == HORIZ) ? L_SPLITH : L_SPLITV;
@@ -896,7 +896,7 @@ static void workspace_defer_update_urgent_hint_cb(EV_P_ ev_timer* w, int rEvents
     FREE(con->urgencyTimer);
 
     if (con->urgent) {
-        DEBUG("Resetting urgency flag of con %p by timer\n", con);
+        DEBUG("Resetting urgency flag of con %p by timer", con);
         container_set_urgency(con, false);
         container_update_parents_urgency(con);
         workspace_update_urgent_flag(container_get_workspace(con));

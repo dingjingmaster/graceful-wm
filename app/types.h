@@ -571,9 +571,19 @@
       { return; } \
   } G_STMT_END
 
-#endif
-typedef uint32_t                            GWMEventStateMask;
+#define EXIT_IF_MEM_IS_NULL(p) \
+  G_STMT_START { \
+    if (G_UNLIKELY (!p)) { \
+      ERROR("mem " #p " is null"); \
+      exit(-1); \
+    } \
+  } G_STMT_END
 
+#endif
+
+
+
+typedef uint32_t                            GWMEventStateMask;
 
 typedef enum Layout                         GWMLayout;                  // ok
 typedef enum Broder                         GWMBorder;                  // ok
@@ -586,6 +596,7 @@ typedef enum Adjacent                       GWMAdjacent;                // ok
 typedef enum SmartGaps                      GWMSmartGaps;               // ok
 typedef enum InputType                      GWMInputType;               // ok
 typedef enum Direction                      GWMDirection;               // ok
+typedef enum ConfigLoad                     GWMConfigLoad;              // ok
 typedef enum DragResult                     GWMDragResult;              // ok
 typedef enum KillWindow                     GWMKillWindow;              // ok
 typedef enum TilingDrag                     GWMTilingDrag;              // ok
@@ -724,6 +735,13 @@ enum FullScreenMode
     CF_NONE         = 0,
     CF_OUTPUT       = 1,
     CF_GLOBAL       = 2,
+};
+
+enum ConfigLoad
+{
+    C_VALIDATE,
+    C_LOAD,
+    C_RELOAD,
 };
 
 enum Layout

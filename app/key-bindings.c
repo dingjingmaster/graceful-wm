@@ -396,7 +396,7 @@ void key_binding_regrab_all_buttons(xcb_connection_t *conn)
     xcb_ungrab_server(conn);
 }
 
-void key_binding_recorder_bindings(void)
+void key_binding_reorder_bindings(void)
 {
     GWMConfigMode* mode = NULL;
     for (GSList* ls = gConfigModes; ls; ls = ls->next) {

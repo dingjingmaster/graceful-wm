@@ -51,6 +51,7 @@ extern xcb_randr_get_output_primary_reply_t*    gPrimary;
 extern TAILQ_HEAD(bindingsHead, Binding)*       gBindings;
 extern SLIST_HEAD(colorPixelHead, ColorPixel)   gColorPixels;
 
+extern GWMConfig                                gConfig;
 
 // atom declare
 #define GWM_ATOM_MACRO(atom) extern xcb_atom_t A_##atom;

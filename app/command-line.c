@@ -58,3 +58,13 @@ bool command_line_get_is_only_check_config()
 {
     return (1 == isOnlyCheckConf);
 }
+
+const char *command_line_get_config_path()
+{
+    return NULL;
+}
+
+GWMConfigLoad command_line_get_load_type()
+{
+    return C_RELOAD;
+}

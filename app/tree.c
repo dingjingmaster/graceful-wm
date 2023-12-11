@@ -49,7 +49,7 @@ void tree_render(void)
         return;
     }
 
-    DEBUG("-- BEGIN RENDERING --\n");
+    DEBUG("-- BEGIN RENDERING --");
 
     mark_unmapped(gContainerRoot);
     gContainerRoot->mapped = true;
@@ -57,7 +57,7 @@ void tree_render(void)
     render_container(gContainerRoot);
 
     x_push_changes(gContainerRoot);
-    DEBUG("-- END RENDERING --\n");
+    DEBUG("-- END RENDERING --");
 }
 
 bool tree_level_up(void)
@@ -352,7 +352,7 @@ bool tree_close_internal(GWMContainer *con, GWMKillWindow killWindow, bool doNot
 
     /* Figure out which container to focus next before detaching 'con'. */
     GWMContainer* next = (con == gFocused) ? container_next_focused(con) : NULL;
-    DEBUG("next = %p, focused = %p\n", next, gFocused);
+    DEBUG("next = %p, focused = %p", next, gFocused);
 
     /* Detach the container so that it will not be rendered anymore. */
     container_detach(con);

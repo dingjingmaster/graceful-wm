@@ -26,12 +26,14 @@
 #include "types.h"
 #include "randr.h"
 #include "utils.h"
+#include "config.h"
 #include "cursor.h"
 #include "output.h"
 #include "manage.h"
 #include "xinerama.h"
 #include "handlers.h"
 #include "container.h"
+#include "workspace.h"
 #include "scratchpad.h"
 #include "command-line.h"
 #include "key-bindings.h"
@@ -41,54 +43,58 @@
 #include "xmacro-atoms_NET-SUPPORTED.h"
 
 
-static void main_exit                   (void);
-static void main_setup_term_handlers    (void);
-static void main_xcb_got_event          (EV_P_ struct ev_io *w, int rEvents);
-static void xcb_prepare_cb              (EV_P_ ev_prepare *w, int revents);
-static void main_handle_term_signal     (struct ev_loop *loop, ev_signal *signal, int rEvents);
+static void main_exit                       (void);
+static void main_setup_term_handlers        (void);
+static void main_init_default_global_value  (void);
+static void main_xcb_got_event              (EV_P_ struct ev_io *w, int rEvents);
+static void xcb_prepare_cb                  (EV_P_ ev_prepare *w, int revents);
+static void main_handle_term_signal         (struct ev_loop *loop, ev_signal *signal, int rEvents);
 
-void main_set_x11_cb                    (bool enable);
+void main_set_x11_cb                        (bool enable);
 
 bool                                    gXKBSupported = false;
 bool                                    gShapeSupported = false;
 
+uint8_t                                 gRootDepth = 0;
+
 int                                     gListenFds;
 int                                     gXKBBase = 0;
 int                                     gShapeBase = 0;
+int                                     gConnScreen = 0;
 int                                     gRandrBase = -1;
 int                                     gXKBCurrentGroup;
 int                                     gXCBNubLockMask = 0;
+
 unsigned int                            gXCBNumLockMask = 0;
+
 char*                                   gCurConfigPath = NULL;
 char*                                   gShmLogName = "";
-char*                                   gCurrentConfigPath = NULL;
 char*                                   gCurrentSocketPath = NULL;
+char*                                   gCurrentConfigPath = NULL;
 const char*                             gCurrentBindingMode = NULL;
 char*                                   gCurrentLogStreamSocketPath = NULL;
 
-xcb_key_symbols_t*                      gKeySymbols;
-
 xcb_atom_t                              gWMSn;
-xcb_atom_t                              gExtendWMHintsWindow;
-xcb_window_t                            gWMSnSelectionOwner;
-
 xcb_colormap_t                          gColormap;
-uint8_t                                 gRootDepth = 0;
-xcb_visualtype_t*                       gVisualType = NULL;
+xcb_window_t                            gWMSnSelectionOwner;
+xcb_atom_t                              gExtendWMHintsWindow;
 
 xcb_window_t                            gRoot = 0;
-int                                     gConnScreen = 0;
-xcb_timestamp_t                         gLastTimestamp = XCB_CURRENT_TIME;
-
 xcb_connection_t*                       gConn = NULL;
 xcb_randr_get_output_primary_reply_t*   gPrimary = NULL;
 SnDisplay*                              gSnDisplay = NULL;
 xcb_screen_t*                           gRootScreen = NULL;
+xcb_visualtype_t*                       gVisualType = NULL;
+xcb_key_symbols_t*                      gKeySymbols = NULL;
+xcb_timestamp_t                         gLastTimestamp = XCB_CURRENT_TIME;
 
 struct ev_loop*                         gMainLoop = NULL;
 static struct ev_prepare*               gsXcbPrepare = NULL;
 
 const char*                             gLogPath = "/tmp/graceful-wm.log";
+
+GWMConfig                               gConfig;
+
 GWMContainer*                           gContainerRoot = NULL;
 GWMContainer*                           gFocused = NULL;
 
@@ -109,11 +115,14 @@ GWM_NET_SUPPORTED_ATOMS_XMACRO
 GWM_REST_ATOMS_XMACRO
 #undef GWM_ATOM_MACRO
 
+
 int main(int argc, char* argv[])
 {
     setlocale (LC_ALL, "");
 
     g_log_set_writer_func (log_handler, NULL, NULL);
+
+    main_init_default_global_value();
 
     if (!command_line_parse (argc, argv)) {
         command_line_help();
@@ -127,6 +136,8 @@ int main(int argc, char* argv[])
         // return ///////
         exit (0);
     }
+
+    config_load_configuration (command_line_get_config_path());
 
     // ipc socket
 
@@ -566,4 +577,18 @@ void main_set_x11_cb(bool enable)
     else {
         ev_prepare_stop(gMainLoop, gsXcbPrepare);
     }
+}
+
+static void main_init_default_global_value()
+{
+#define INIT_VALUE(key, val) \
+    { \
+        if (!key) {key = g_strdup(val);}\
+    }
+
+    INIT_VALUE(gCurrentSocketPath, "/tmp/gwm-1000.sock")
+    INIT_VALUE(gCurrentConfigPath, "/etc/gwm/gwm-config.ini")
+    INIT_VALUE(gCurrentLogStreamSocketPath, "/tmp/gwm-log-1000.sock")
+
+#undef INIT_VALUE
 }

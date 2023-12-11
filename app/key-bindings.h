@@ -15,7 +15,7 @@ extern const char* DEFAULT_BINDING_MODE;
 
 bool key_binding_load_keymap(void);
 void key_binding_translate_keysyms(void);
-void key_binding_recorder_bindings(void);
+void key_binding_reorder_bindings(void);
 void key_binding_free (GWMBinding* bind);
 int* key_binding_get_buttons_to_grab(void);
 void key_binding_switch_mode(const char* newMode);
