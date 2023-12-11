@@ -197,17 +197,6 @@ int util_ws_name_to_number(const char *name)
     return 0;
 }
 
-void util_main_set_x11_cb(bool enable)
-{
-    DEBUG("Setting main X11 callback to enabled=%d", enable)
-    if (enable) {
-        ev_prepare_start(gMainLoop,gXcbPrepare);
-        ev_feed_event(gMainLoop, gXcbPrepare, 0);
-    }
-    else {
-        ev_prepare_stop(gMainLoop, gXcbPrepare);
-    }
-}
 
 char* util_parse_string(const char **walk, bool asWord)
 {
@@ -258,4 +247,11 @@ char* util_parse_string(const char **walk, bool asWord)
     }
 
     return str;
+}
+
+bool util_update_if_necessary(uint32_t *destination, uint32_t newValue)
+{
+    uint32_t oldValue = *destination;
+
+    return ((*destination = newValue) != oldValue);
 }

@@ -40,6 +40,8 @@ static bool _container_move_to_con(GWMContainer* con, GWMContainer* target, bool
 
 void container_activate(GWMContainer *con)
 {
+    g_return_if_fail(con);
+
     container_focus(con);
     container_raise(con);
 }
@@ -751,7 +753,7 @@ char *container_get_tree_representation(GWMContainer *con)
         buf = g_strdup("S[");
     }
     else {
-        ERROR("BUG: Code not updated to account for new layout type\n");
+        ERROR("BUG: Code not updated to account for new layout type");
         g_assert(false);
     }
 
@@ -917,13 +919,13 @@ void container_set_layout(GWMContainer *con, GWMLayout layout)
     if (con->type == CT_WORKSPACE) {
         if (container_num_children(con) == 0) {
             GWMLayout ws_layout = (layout == L_STACKED || layout == L_TABBED) ? layout : L_DEFAULT;
-            DEBUG("Setting workspace_layout to %d\n", ws_layout);
+            DEBUG("Setting workspace_layout to %d", ws_layout);
             con->workspaceLayout = ws_layout;
             DEBUG("Setting layout to %d", layout);
             con->layout = layout;
         }
         else if (layout == L_STACKED || layout == L_TABBED || layout == L_SPLIT_V || layout == L_SPLIT_H) {
-            DEBUG("Creating new split container\n");
+            DEBUG("Creating new split container");
             /* 1: create a new split container */
             GWMContainer* new = container_new(NULL, NULL);
             new->parent = con;
@@ -977,22 +979,22 @@ bool container_swap(GWMContainer *first, GWMContainer *second)
     DEBUG ("Swapping containers %p / %p", first, second);
 
     if (first->type != CT_CON) {
-        ERROR("Only regular containers can be swapped, but found con = %p with type = %d.\n", first, first->type);
+        ERROR("Only regular containers can be swapped, but found con = %p with type = %d.", first, first->type);
         return false;
     }
 
     if (second->type != CT_CON) {
-        ERROR("Only regular containers can be swapped, but found con = %p with type = %d.\n", second, second->type);
+        ERROR("Only regular containers can be swapped, but found con = %p with type = %d.", second, second->type);
         return false;
     }
 
     if (first == second) {
-        DEBUG("Swapping container %p with itself, nothing to do.\n", first);
+        DEBUG("Swapping container %p with itself, nothing to do.", first);
         return false;
     }
 
     if (container_has_parent(first, second) || container_has_parent(second, first)) {
-        ERROR("Cannot swap containers %p and %p because they are in a parent-child relationship.\n", first, second);
+        ERROR("Cannot swap containers %p and %p because they are in a parent-child relationship.", first, second);
         return false;
     }
 
@@ -1306,7 +1308,7 @@ void container_toggle_layout(GWMContainer *con, const char *toggleMode)
         parent = con->parent;
     }
 
-    DEBUG("con_toggle_layout(%p, %s), parent = %p\n", con, toggleMode, parent);
+    DEBUG("con_toggle_layout(%p, %s), parent = %p", con, toggleMode, parent);
 
     const char delim[] = " ";
 
@@ -1457,7 +1459,7 @@ GWMContainer *container_new_skeleton(GWMContainer *parent, GWMWindow *window)
 
     newC->onRemoveChild = container_on_remove_child;
 
-    g_queue_push_tail (&gAllContainer, newC);
+    TAILQ_INSERT_TAIL(&gAllContainer, newC, allContainers);
 
     newC->type = CT_CON;
     newC->window = window;
@@ -1470,7 +1472,7 @@ GWMContainer *container_new_skeleton(GWMContainer *parent, GWMWindow *window)
     else {
         newC->depth = gRootDepth;
     }
-    DEBUG("opening window\n");
+    DEBUG("opening window");
 
     TAILQ_INIT(&(newC->nodesHead));
     TAILQ_INIT(&(newC->focusHead));
@@ -1656,7 +1658,7 @@ void container_move_to_output(GWMContainer *con, GWMOutput *output, bool fixCoor
     GWMContainer* ws = NULL;
     GREP_FIRST(ws, output_get_content(output->container), workspace_is_visible(child));
     g_assert(ws != NULL);
-    DEBUG("Moving con %p to output %s\n", con, output_primary_name(output));
+    DEBUG("Moving con %p to output %s", con, output_primary_name(output));
     container_move_to_workspace(con, ws, fixCoordinates, false, false);
 }
 
@@ -1886,7 +1888,7 @@ static void container_on_remove_child(GWMContainer* con)
      * don’t close it automatically. */
     int children = container_num_children(con);
     if (children == 0) {
-        DEBUG("Container empty, closing\n");
+        DEBUG("Container empty, closing");
         tree_close_internal(con, KILL_WINDOW_DO_NOT, false);
         return;
     }
@@ -2069,7 +2071,7 @@ static bool _container_move_to_con(GWMContainer* con, GWMContainer* target, bool
     }
 
     if (container_is_floating(con)) {
-        DEBUG("Container is floating, using parent instead.\n");
+        DEBUG("Container is floating, using parent instead.");
         con = con->parent;
     }
 
@@ -2116,7 +2118,7 @@ static bool _container_move_to_con(GWMContainer* con, GWMContainer* target, bool
 
     /* 2: we go up one level, but only when target is a normal container */
     if (target->type != CT_WORKSPACE) {
-        DEBUG("target originally = %p / %s / type %d\n", target, target->name, target->type);
+        DEBUG("target originally = %p / %s / type %d", target, target->name, target->type);
         target = target->parent;
     }
 
@@ -2124,14 +2126,14 @@ static bool _container_move_to_con(GWMContainer* con, GWMContainer* target, bool
      * can't move con next to it - floating containers have only one child - so
      * we get the workspace instead. */
     if (target->type == CT_FLOATING_CON) {
-        DEBUG("floatingcon, going up even further\n");
+        DEBUG("floatingcon, going up even further");
         orig_target = target;
         target = target->parent;
     }
 
     if (con->type == CT_FLOATING_CON) {
         GWMContainer* ws = container_get_workspace(target);
-        DEBUG("This is a floating window, using workspace %p / %s\n", ws, ws->name);
+        DEBUG("This is a floating window, using workspace %p / %s", ws, ws->name);
         target = ws;
     }
 
@@ -2142,7 +2144,7 @@ static bool _container_move_to_con(GWMContainer* con, GWMContainer* target, bool
             floating_fix_coordinates(con, &(source_output->rect), &(dest_output->rect));
         }
         else {
-            DEBUG("Not fixing coordinates, fix_coordinates flag = %d\n", fixCoordinates);
+            DEBUG("Not fixing coordinates, fix_coordinates flag = %d", fixCoordinates);
         }
     }
 
@@ -2160,7 +2162,7 @@ static bool _container_move_to_con(GWMContainer* con, GWMContainer* target, bool
         fullscreen = NULL;
     }
 
-    DEBUG("Re-attaching container to %p / %s\n", target, target->name);
+    DEBUG("Re-attaching container to %p / %s", target, target->name);
     /* 4: re-attach the con to the parent of this focused container */
     GWMContainer* parent = con->parent;
     container_detach(con);
@@ -2202,7 +2204,7 @@ static bool _container_move_to_con(GWMContainer* con, GWMContainer* target, bool
     if (!ignoreFocus) {
         workspace_show(current_ws);
         if (dontWarp) {
-            DEBUG("x_set_warp_to(NULL) because dont_warp is set\n");
+            DEBUG("x_set_warp_to(NULL) because dont_warp is set");
             x_set_warp_to(NULL);
         }
     }

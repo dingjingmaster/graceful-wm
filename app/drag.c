@@ -79,13 +79,13 @@ GWMDragResult drag_pointer(GWMContainer* con, const xcb_button_press_event_t *ev
 
     ev_prepare_init(prepare, xcb_drag_prepare_cb);
     prepare->data = &loop;
-    util_main_set_x11_cb(false);
+    main_set_x11_cb(false);
     ev_prepare_start(gMainLoop, prepare);
 
     ev_loop(gMainLoop, 0);
 
     ev_prepare_stop(gMainLoop, prepare);
-    util_main_set_x11_cb(true);
+    main_set_x11_cb(true);
 
     xcb_ungrab_keyboard(gConn, XCB_CURRENT_TIME);
     xcb_ungrab_pointer(gConn, XCB_CURRENT_TIME);

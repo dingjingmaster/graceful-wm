@@ -46,6 +46,7 @@ extern char*                                    gCurrentSocketPath;
 extern char*                                    gCurrentConfigPath;
 extern const char*                              gCurrentBindingMode;
 extern char*                                    gCurrentLogStreamSocketPath;
+extern xcb_randr_get_output_primary_reply_t*    gPrimary;
 
 extern TAILQ_HEAD(bindingsHead, Binding)*       gBindings;
 extern SLIST_HEAD(colorPixelHead, ColorPixel)   gColorPixels;
@@ -56,5 +57,8 @@ extern SLIST_HEAD(colorPixelHead, ColorPixel)   gColorPixels;
 GWM_NET_SUPPORTED_ATOMS_XMACRO
 GWM_REST_ATOMS_XMACRO
 #undef GWM_ATOM_MACRO
+
+
+extern void main_set_x11_cb                    (bool enable);
 
 #endif //GRACEFUL_WM_VAL_H

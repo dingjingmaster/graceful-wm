@@ -50,8 +50,7 @@ void tree_render(void)
     }
 
     DEBUG("-- BEGIN RENDERING --\n");
-    /* Reset map state for all nodes in tree */
-    /* TODO: a nicer method to walk all nodes would be good, maybe? */
+
     mark_unmapped(gContainerRoot);
     gContainerRoot->mapped = true;
 

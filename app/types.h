@@ -4,7 +4,7 @@
 
 #ifndef GRACEFUL_WM_TYPES_H
 #define GRACEFUL_WM_TYPES_H
-
+#include <ev.h>
 #include <glib.h>
 #include <pcre2.h>
 #include <stdint.h>
@@ -13,6 +13,7 @@
 #include <xcb/shape.h>
 #include <xcb/randr.h>
 #include <glib/gi18n.h>
+#include <xcb/xcb_aux.h>
 #include <xcb/xcb_icccm.h>
 
 #include <cairo/cairo.h>
@@ -577,6 +578,7 @@ typedef uint32_t                            GWMEventStateMask;
 typedef enum Layout                         GWMLayout;                  // ok
 typedef enum Broder                         GWMBorder;                  // ok
 typedef enum Cursor                         GWMCursor;                  // ok
+typedef enum Warping                        GWMWarping;
 typedef enum Position                       GWMPosition;                // ok
 typedef enum GapsMask                       GWMGapsMask;                // ok
 typedef enum MarkMode                       GWMMarkMode;                // ok
@@ -586,11 +588,15 @@ typedef enum InputType                      GWMInputType;               // ok
 typedef enum Direction                      GWMDirection;               // ok
 typedef enum DragResult                     GWMDragResult;              // ok
 typedef enum KillWindow                     GWMKillWindow;              // ok
+typedef enum TilingDrag                     GWMTilingDrag;              // ok
 typedef enum Orientation                    GWMOrientation;             // ok
 typedef enum BorderStyle                    GWMBorderStyle;             // ok
 typedef enum XKBGroupMask                   GWMXKBGroupMask;            // ok
+typedef enum FocusWarping                   GWMFocusWarping;            // ok
+typedef enum SmartBorders                   GWMSmartBorders;            // ok
 typedef enum OutputCloseFar                 GWMOutputCloseFar;          // ok
 typedef enum FullScreenMode                 GWMFullScreenMode;          // ok
+typedef enum HideEdgeBordersMode            GWMHideEdgeBordersMode;     // ok
 
 typedef struct Gaps                         GWMGaps;                    // ok
 typedef struct Size                         GWMSize;                    // ok
@@ -601,6 +607,7 @@ typedef struct Regex                        GWMRegex;                   // ok
 typedef struct Match                        GWMMatch;                   // ok
 typedef struct Color                        GWMColor;                   // ok
 typedef struct Output                       GWMOutput;                  // ok
+typedef struct Config                       GWMConfig;                  // ok
 typedef struct Window                       GWMWindow;                  // ok
 typedef struct Surface                      GWMSurface;                 // ok
 typedef struct Binding                      GWMBinding;                 // ok
@@ -628,6 +635,34 @@ TAILQ_HEAD(OutputHead, Output);
 TAILQ_HEAD(AssignmentHead, Assignment);
 TAILQ_HEAD(AllContainerHead, Container);
 TAILQ_HEAD(WorkspaceAssignmentsHead, WorkspaceAssignment);
+
+enum Warping
+{
+    POINTER_WARPING_OUTPUT = 0,
+    POINTER_WARPING_NONE = 1
+};
+
+enum SmartGaps
+{
+    SMART_GAPS_OFF,
+    SMART_GAPS_ON,
+    SMART_GAPS_INVERSE_OUTER
+};
+
+enum SmartBorders
+{
+    SMART_BORDERS_OFF,
+    SMART_BORDERS_ON,
+    SMART_BORDERS_NO_GAPS
+};
+
+enum TilingDrag
+{
+    TILING_DRAG_OFF = 0,
+    TILING_DRAG_MODIFIER = 1,
+    TILING_DRAG_TITLEBAR = 2,
+    TILING_DRAG_MODIFIER_OR_TITLEBAR = 3
+};
 
 enum OutputCloseFar
 {
@@ -673,13 +708,6 @@ enum BorderStyle
     BS_NONE         = 0,
     BS_PIXEL        = 1,
     BS_NORMAL       = 2,
-};
-
-enum SmartGaps
-{
-    SMART_GAPS_OFF,
-    SMART_GAPS_ON,
-    SMART_GAPS_INVERSE_OUTER
 };
 
 enum XKBGroupMask
@@ -767,6 +795,24 @@ enum DragResult
     DRAG_ABORT
 };
 
+enum HideEdgeBordersMode
+{
+    HEBM_NONE = ADJ_NONE,
+    HEBM_VERTICAL = ADJ_LEFT_SCREEN_EDGE | ADJ_RIGHT_SCREEN_EDGE,
+    HEBM_HORIZONTAL = ADJ_UPPER_SCREEN_EDGE | ADJ_LOWER_SCREEN_EDGE,
+    HEBM_BOTH = HEBM_VERTICAL | HEBM_HORIZONTAL,
+    HEBM_SMART = (1 << 5),
+    HEBM_SMART_NO_GAPS = (1 << 6)
+};
+
+enum FocusWarping
+{
+    FOCUS_WRAPPING_OFF = 0,
+    FOCUS_WRAPPING_ON = 1,
+    FOCUS_WRAPPING_FORCE = 2,
+    FOCUS_WRAPPING_WORKSPACE = 3
+};
+
 struct Regex
 {
     char*                       pattern;
@@ -830,6 +876,115 @@ struct BindingKeycode
     xcb_keycode_t                               keycode;
     GWMEventStateMask                           modifiers;
     TAILQ_ENTRY(BindingKeycode)                 keycodes;
+};
+
+struct Colortriple
+{
+    GWMColor border;
+    GWMColor background;
+    GWMColor text;
+    GWMColor indicator;
+    GWMColor childBorder;
+};
+
+struct Font
+{
+    enum {
+        FONT_TYPE_NONE = 0,
+        FONT_TYPE_XCB,
+        FONT_TYPE_PANGO
+    } type;
+
+    int                                         height;    // The height of the font, built from font_ascent + font_descent
+    char*                                       pattern;   // The pattern/name used to load the font.
+
+    union {
+        struct {
+            xcb_font_t              id;                     // The xcb-id for the font
+            xcb_query_font_reply_t* info;                   // Font information gathered from the server
+            xcb_charinfo_t*         table;                  // Font table for this font (may be NULL)
+        } xcb;
+        PangoFontDescription*       pangoDesc;              // The pango font description
+    } specific;
+};
+
+struct Config
+{
+    bool                                        showMarks;
+    bool                                        forceXinerama;
+    bool                                        disableRandr15;
+    bool                                        disableWorkspaceBar;
+    bool                                        disableFocusFollowsMouse;
+    bool                                        workspaceAutoBackAndForth;
+
+    int                                         containerStackLimit;
+    int                                         containerStackLimitValue;
+    int                                         defaultBorderWidth;
+    int                                         defaultFloatingBorderWidth;
+    int                                         defaultOrientation;
+    int                                         numberBarconfigs;   // The number of currently parsed barconfigs
+
+    const char*                                 terminal;
+    char*                                       fakeOutputs;
+    char*                                       ipcSocketPath;
+    char*                                       restartStatePath;
+
+    float                                       workspaceUrgencyTimer;
+
+    enum {
+        FOWA_SMART,     // Focus if the target workspace is visible, set urgency hint otherwise.
+        FOWA_URGENT,    // Always set the urgency hint.
+        FOWA_FOCUS,     // Always focus the window.
+        FOWA_NONE       // Ignore the request (no focus, no urgency hint).
+    } focusOnWindowActivation;
+
+    enum {
+        ALIGN_LEFT,
+        ALIGN_CENTER,
+        ALIGN_RIGHT
+    } titleAlign;
+
+    GWMBorderStyle                              defaultBorder;
+    GWMBorderStyle                              defaultFloatingBorder;
+
+    uint32_t                                    floatingModifier;
+    int32_t                                     floatingMaximumWidth;
+    int32_t                                     floatingMaximumHeight;
+    int32_t                                     floatingMinimumWidth;
+    int32_t                                     floatingMinimumHeight;
+
+    /* Color codes are stored here */
+    struct ConfigClient {
+        GWMColor            background;
+        struct Colortriple  focused;
+        struct Colortriple  focused_inactive;
+        struct Colortriple  focused_tab_title;
+        struct Colortriple  unfocused;
+        struct Colortriple  urgent;
+        struct Colortriple  placeholder;
+        bool                gotFocusedTabTitle;
+    } client;
+    struct ConfigBar {
+        struct Colortriple  focused;
+        struct Colortriple  unfocused;
+        struct Colortriple  urgent;
+    } bar;
+
+    enum {
+        PDF_SMART = 0,              // display (and focus) the popup when it belongs to the fullscreen window only.
+        PDF_LEAVE_FULLSCREEN = 1,   // leave fullscreen mode unconditionally
+        PDF_IGNORE = 2,             // just ignore the popup, that is, don’t map it
+    } popupDuringFullscreen;
+
+    GWMGaps                                     gaps;               // Gap sizes
+    GWMFont                                     font;
+    GWMSmartGaps                                smartGaps;          // Disable gaps if there is only one container on the workspace
+    GWMTilingDrag                               tilingDrag;
+    GWMWarping                                  mouseWarping;
+    GWMSmartBorders                             smartBorders;       // Should single containers on a workspace receive a border?
+    GWMLayout                                   defaultLayout;
+    GWMFocusWarping                             focusWrapping;
+    GWMHideEdgeBordersMode                      hideEdgeBorders;    //
 };
 
 struct RenderParams
@@ -896,37 +1051,6 @@ struct StartupSequence
     SnLauncherContext*                          context;           // libstartup-notification context for this launch
     time_t                                      deleteAt;          // time at which this sequence should be deleted (after it was marked as completed)
     GQueue                                      sequences;
-};
-
-struct Font
-{
-    enum {
-        FONT_TYPE_NONE = 0,
-        FONT_TYPE_XCB,
-        FONT_TYPE_PANGO
-    } type;
-
-    int                                         height;             // The height of the font, built from font_ascent + font_descent
-    char*                                       pattern;            // The pattern/name used to load the font.
-
-    union {
-        struct {
-            xcb_font_t              id;              // The xcb-id for the font
-            xcb_query_font_reply_t* info;            // Font information gathered from the server
-            xcb_charinfo_t*         table;           // Font table for this font (may be NULL)
-        } xcb;
-
-        PangoFontDescription*                   pangoDesc;           // The pango font description
-    } specific;
-};
-
-struct Colortriple
-{
-    GWMColor border;
-    GWMColor background;
-    GWMColor text;
-    GWMColor indicator;
-    GWMColor child_border;
 };
 
 

@@ -4,6 +4,10 @@
 
 #include "config.h"
 
+#include "val.h"
+#include "log.h"
+
+
 GWMEventStateMask config_event_state_from_str(const char *str)
 {
     GWMEventStateMask result = 0;
@@ -63,3 +67,15 @@ void config_start_config_error_nag_bar(const char *configPath, bool has_errors)
 {
 
 }
+
+bool config_load_configuration(const char *overrideConfigfile)
+{
+    return 0;
+}
+
+void config_ungrab_all_keys(xcb_connection_t *conn)
+{
+    DEBUG("Ungrabbing all keys");
+    xcb_ungrab_key(conn, XCB_GRAB_ANY, gRoot, XCB_BUTTON_MASK_ANY);
+}
+

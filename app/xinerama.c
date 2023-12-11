@@ -93,7 +93,7 @@ static void query_screens(xcb_connection_t *conn)
  */
 static void use_root_output(xcb_connection_t *conn)
 {
-    GWMOutput *s = randr_create_root_output(conn);
+    GWMOutput* s = randr_create_root_output(conn);
     s->active = true;
     TAILQ_INSERT_TAIL(&gOutputs, s, outputs);
     randr_output_init_container(s);

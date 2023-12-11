@@ -71,9 +71,6 @@ TAILQ_HEAD(initialMappingHead, ContainerState)      gInitialMappingHead = TAILQ_
 
 void x_container_init(GWMContainer *con)
 {
-    /* TODO: maybe create the window when rendering first? we could then even
-     * get the initial geometry right */
-
     uint32_t mask = 0;
     uint32_t values[5];
 

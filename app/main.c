@@ -1,7 +1,6 @@
 //
 // Created by dingjing on 23-11-23.
 //
-#include <ev.h>
 #include <glib.h>
 #include <stdlib.h>
 #include <locale.h>
@@ -45,8 +44,10 @@
 static void main_exit                   (void);
 static void main_setup_term_handlers    (void);
 static void main_xcb_got_event          (EV_P_ struct ev_io *w, int rEvents);
+static void xcb_prepare_cb              (EV_P_ ev_prepare *w, int revents);
 static void main_handle_term_signal     (struct ev_loop *loop, ev_signal *signal, int rEvents);
 
+void main_set_x11_cb                    (bool enable);
 
 bool                                    gXKBSupported = false;
 bool                                    gShapeSupported = false;
@@ -80,12 +81,14 @@ int                                     gConnScreen = 0;
 xcb_timestamp_t                         gLastTimestamp = XCB_CURRENT_TIME;
 
 xcb_connection_t*                       gConn = NULL;
-struct ev_loop*                         gMainLoop = NULL;
+xcb_randr_get_output_primary_reply_t*   gPrimary = NULL;
 SnDisplay*                              gSnDisplay = NULL;
 xcb_screen_t*                           gRootScreen = NULL;
 
+struct ev_loop*                         gMainLoop = NULL;
+static struct ev_prepare*               gsXcbPrepare = NULL;
+
 const char*                             gLogPath = "/tmp/graceful-wm.log";
-struct ev_prepare*                      gXcbPrepare = NULL;
 GWMContainer*                           gContainerRoot = NULL;
 GWMContainer*                           gFocused = NULL;
 
@@ -194,7 +197,7 @@ int main(int argc, char* argv[])
 
     DEBUG(_("\nroot_depth = %d, visual_id = 0x%08x.\n"
             "root_screen->height_in_pixels = %d, root_screen->height_in_millimeters = %d\n"
-            "One logical pixel corresponds to %d physical pixel on this display.\n"),
+            "One logical pixel corresponds to %d physical pixel on this display."),
             gRootDepth, gVisualType->visual_id,
             gRootScreen->height_in_pixels, gRootScreen->height_in_millimeters,
             dpi_logical_px(1))
@@ -369,8 +372,9 @@ int main(int argc, char* argv[])
         DEBUG(_("Shape 1.1 is not present on this server"));
     }
 
-    // restore connect
-//    restore_connect();
+    DEBUG(_("restore_connect start"))
+    restore_connect();
+    DEBUG(_("restore_connect end!"))
 
     handler_property_init();
 
@@ -416,10 +420,14 @@ int main(int argc, char* argv[])
         output = randr_get_first_output();
     }
 
+    DEBUG(_("container_activate start"))
     container_activate(container_descend_focused (output_get_content (output->container)));
     free (pointerReply);
+    DEBUG(_("container_activate end"))
 
+    DEBUG(_("tree_render start"))
     tree_render();
+    DEBUG(_("tree_render end"))
 
     x_set_gwm_atoms();
 
@@ -431,15 +439,19 @@ int main(int argc, char* argv[])
     struct ev_io* xcbWatcher = g_malloc0 (sizeof (struct ev_io));
     g_assert(xcbWatcher);
 
-    gXcbPrepare = g_malloc0 (sizeof (struct ev_prepare));
-    g_assert(gXcbPrepare);
+    gsXcbPrepare = g_malloc0 (sizeof (struct ev_prepare));
+    g_assert(gsXcbPrepare);
 
     ev_io_init(xcbWatcher, main_xcb_got_event, xcb_get_file_descriptor (gConn), EV_READ);
     ev_io_start (gMainLoop, xcbWatcher);
 
+    ev_prepare_init(gsXcbPrepare, xcb_prepare_cb);
+    ev_prepare_start(gMainLoop, gsXcbPrepare);
+
     xcb_flush (gConn);
 
     // 捕获服务器，丢弃旧的事件
+    DEBUG(_("xcb_grab_server start"))
     xcb_grab_server (gConn);
     {
         xcb_aux_sync (gConn);
@@ -460,12 +472,15 @@ int main(int argc, char* argv[])
         manage_existing_windows (gRoot);
     }
     xcb_ungrab_server (gConn);
+    DEBUG(_("xcb_grab_server end"))
 
     {
         // sigaction
     }
 
+    DEBUG(_("main_setup_term_handlers start"))
     main_setup_term_handlers ();
+    DEBUG(_("main_setup_term_handlers end"))
 
     signal (SIGPIPE, SIG_IGN);
 
@@ -474,6 +489,7 @@ int main(int argc, char* argv[])
     atexit (main_exit);
 
     // 开始运行 graceful window manager
+    DEBUG(_("gMainLoop start ..."))
     ev_loop (gMainLoop, 0);
 
     // free
@@ -484,7 +500,9 @@ int main(int argc, char* argv[])
 
 static void main_exit (void)
 {
+    DEBUG(_("main_exit start"))
 
+    DEBUG(_("main_exit end"))
 }
 
 static void main_setup_term_handlers (void)
@@ -512,4 +530,40 @@ static void main_xcb_got_event(EV_P_ struct ev_io *w, int rEvents)
 static void main_handle_term_signal(struct ev_loop *loop, ev_signal *signal, int rEvents)
 {
     exit(128 + signal->signum);
+}
+
+static void xcb_prepare_cb(EV_P_ ev_prepare *w, int revents)
+{
+    xcb_generic_event_t *event;
+
+    while ((event = xcb_poll_for_event(gConn)) != NULL) {
+        if (event->response_type == 0) {
+            if (handler_event_is_ignored(event->sequence, 0)) {
+                DEBUG("Expected X11 Error received for sequence %x\n", event->sequence);
+            }
+            else {
+                xcb_generic_error_t *error = (xcb_generic_error_t *)event;
+                DEBUG("X11 Error received (probably harmless)! sequence 0x%x, error_code = %d", error->sequence, error->error_code);
+            }
+            free(event);
+            continue;
+        }
+        int type = (event->response_type & 0x7F);
+        handler_handle_event(type, event);
+        free(event);
+    }
+
+    xcb_flush(gConn);
+}
+
+void main_set_x11_cb(bool enable)
+{
+    DEBUG("Setting main X11 callback to enabled=%d", enable)
+    if (enable) {
+        ev_prepare_start(gMainLoop,gsXcbPrepare);
+        ev_feed_event(gMainLoop, gsXcbPrepare, 0);
+    }
+    else {
+        ev_prepare_stop(gMainLoop, gsXcbPrepare);
+    }
 }
