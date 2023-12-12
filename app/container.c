@@ -61,14 +61,14 @@ GWMContainer *container_descend_focused(GWMContainer *con)
 
 void container_free(GWMContainer *con)
 {
-    free(con->name);
+    FREE(con->name);
     FREE(con->decorationRenderParams);
     TAILQ_REMOVE(&gAllContainer, con, allContainers);
     while (!TAILQ_EMPTY(&(con->swallowHead))) {
         GWMMatch *match = TAILQ_FIRST(&(con->swallowHead));
         TAILQ_REMOVE(&(con->swallowHead), match, matches);
         match_free(match);
-        free(match);
+        FREE(match);
     }
     while (!TAILQ_EMPTY(&(con->marksHead))) {
         GWMMark* mark = TAILQ_FIRST(&(con->marksHead));
@@ -79,7 +79,7 @@ void container_free(GWMContainer *con)
 
     DEBUG(_("con %p freed"), con);
 
-    free(con);
+    FREE(con);
 }
 
 void container_focus(GWMContainer *con)
@@ -510,10 +510,10 @@ char* container_parse_title_format(GWMContainer *con)
     i3String *formatted = i3string_from_utf8(formatted_str);
     i3string_set_markup(formatted, pango_markup);
 
-    free(formatted_str);
-    free(title);
-    free(class);
-    free(instance);
+    FREE(formatted_str);
+    FREE(title);
+    FREE(class);
+    FREE(instance);
 
     return formatted;
 #endif
@@ -763,9 +763,9 @@ char *container_get_tree_representation(GWMContainer *con)
         char *child_txt = container_get_tree_representation(child);
 
         char *tmp_buf = g_strdup_printf("%s%s%s", buf, (TAILQ_FIRST(&(con->nodesHead)) == child ? "" : " "), child_txt);
-        free(buf);
+        FREE(buf);
         buf = tmp_buf;
-        free(child_txt);
+        FREE(child_txt);
     }
 
     /* 3) close the brackets */
@@ -947,7 +947,7 @@ void container_set_layout(GWMContainer *con, GWMLayout layout)
             }
 
             container_set_focus_order(new, focus_order);
-            free(focus_order);
+            FREE(focus_order);
 
             /* 4: attach the new split container to the workspace */
             DEBUG(_("Attaching new split to ws"));
@@ -1361,7 +1361,7 @@ void container_toggle_layout(GWMContainer *con, const char *toggleMode)
                 current_layout_found = true;
             }
         }
-        free(tm_dup);
+        FREE(tm_dup);
 
         if (new_layout != L_DEFAULT) {
             container_set_layout(con, new_layout);
@@ -1796,13 +1796,13 @@ GWMContainer* container_get_full_screen_con(GWMContainer *con, GWMFullScreenMode
             while (!TAILQ_EMPTY(&bfs_head)) {
                 entry = TAILQ_FIRST(&bfs_head);
                 TAILQ_REMOVE(&bfs_head, entry, entries);
-                free(entry);
+                FREE(entry);
             }
             return current;
         }
 
         TAILQ_REMOVE(&bfs_head, entry, entries);
-        free(entry);
+        FREE(entry);
 
         TAILQ_FOREACH (child, &(current->nodesHead), nodes) {
             entry = g_malloc0(sizeof(struct bfs_entry));

@@ -24,5 +24,5 @@ void sync_respond(xcb_window_t window, uint32_t rnd)
 
     xcb_send_event(gConn, false, window, XCB_EVENT_MASK_NO_EVENT, (char*) ev);
     xcb_flush(gConn);
-    free(reply);
+    FREE(reply);
 }

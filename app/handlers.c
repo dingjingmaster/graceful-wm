@@ -119,7 +119,7 @@ struct GWMPropertyHandler
 
 
 
-static GSList   gIgnoreEvents;
+static SLIST_HEAD(IgnoreHead, IgnoreEvent)  gsIgnoreEvents;
 static GWMPropertyHandler gPropertyHandlers[] =
     {
         {0, 128, handler_handle_window_name_change},
@@ -162,12 +162,44 @@ void handler_property_init()
 
 void handler_add_ignore_event(int sequence, int responseType)
 {
+    GWMIgnoreEvent* event = g_malloc0(sizeof(GWMIgnoreEvent));
+    EXIT_IF_MEM_IS_NULL(event);
 
+    event->sequence = sequence;
+    event->responseType = responseType;
+    event->added = time(NULL);
+
+    SLIST_INSERT_HEAD(&gsIgnoreEvents, event, ignoreEvents);
 }
 
 bool handler_event_is_ignored(int sequence, int responseType)
 {
-    return 0;
+    GWMIgnoreEvent* event;
+    time_t now = time(NULL);
+    for (event = SLIST_FIRST(&gsIgnoreEvents); event != SLIST_END(&gsIgnoreEvents);) {
+        if ((now - event->added) > 5) {
+            GWMIgnoreEvent* save = event;
+            event = SLIST_NEXT(event, ignoreEvents);
+            SLIST_REMOVE(&gsIgnoreEvents, save, IgnoreEvent, ignoreEvents);
+            FREE(save);
+        }
+        else {
+            event = SLIST_NEXT(event, ignoreEvents);
+        }
+    }
+
+    SLIST_FOREACH (event, &gsIgnoreEvents, ignoreEvents) {
+        if (event->sequence != sequence) {
+            continue;
+        }
+
+        if (event->responseType != -1 && event->responseType != responseType) {
+            continue;
+        }
+        return true;
+    }
+
+    return false;
 }
 
 void handler_handle_event(int type, xcb_generic_event_t *event)
@@ -423,7 +455,7 @@ static bool handler_handle_normal_hints(GWMContainer* con, xcb_get_property_repl
     }
 
     {
-        free (reply);
+        FREE(reply);
         reply = NULL;
     }
 
@@ -975,7 +1007,8 @@ static void handle_unmap_notify_event(xcb_unmap_notify_event_t *event)
 
 ignore_end:
     handler_add_ignore_event(event->sequence, XCB_ENTER_NOTIFY);
-    free(xcb_get_input_focus_reply(gConn, cookie, NULL));
+    xcb_get_input_focus_reply_t* resp = xcb_get_input_focus_reply(gConn, cookie, NULL);
+    FREE(resp);
 }
 
 static void handle_destroy_notify_event(xcb_destroy_notify_event_t *event)

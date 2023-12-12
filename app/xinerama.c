@@ -78,7 +78,7 @@ static void query_screens(xcb_connection_t *conn)
         DEBUG(_("found Xinerama screen: %d x %d at %d x %d"), screen_info[screen].width, screen_info[screen].height, screen_info[screen].x_org, screen_info[screen].y_org);
     }
 
-    free(reply);
+    FREE(reply);
 
     if (gsNumScreens == 0) {
         ERROR(_("No screens found. Please fix your setup. i3 will exit now."));

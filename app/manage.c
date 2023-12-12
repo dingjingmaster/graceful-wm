@@ -23,6 +23,7 @@
 #include "draw-util.h"
 #include "key-bindings.h"
 #include "utils.h"
+#include "restore-layout.h"
 
 
 static void _remove_matches(GWMContainer* con);
@@ -74,8 +75,8 @@ void manage_existing_windows(xcb_window_t root)
         manage_window(children[i], cookies[i], true);
     }
 
-    free(reply);
-    free(cookies);
+    FREE(reply);
+    FREE(cookies);
 }
 
 GWMContainer *manage_remanage_window(GWMContainer *con)
@@ -344,7 +345,7 @@ void manage_window(xcb_window_t window, xcb_get_window_attributes_cookie_t cooki
 
     char *name = g_strdup_printf("[gwm con] container around %p", cwindow);
     x_set_name(nc, name);
-    free(name);
+    FREE(name);
 
     GWMContainer* ws = container_get_workspace(nc);
     GWMContainer* fs = container_get_full_screen_covering_ws(ws);
@@ -552,9 +553,9 @@ void manage_window(xcb_window_t window, xcb_get_window_attributes_cookie_t cooki
     output_push_sticky_windows(gFocused);
 
 geom_out:
-    free(geom);
+    FREE(geom);
 out:
-    free(attr);
+    FREE(attr);
 }
 
 
@@ -576,6 +577,6 @@ static void _remove_matches(GWMContainer* con)
         GWMMatch *first = TAILQ_FIRST(&(con->swallowHead));
         TAILQ_REMOVE(&(con->swallowHead), first, matches);
         match_free(first);
-        free(first);
+        FREE(first);
     }
 }

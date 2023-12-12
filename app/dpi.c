@@ -55,7 +55,7 @@ void dpi_init(void)
     DEBUG("Found Xft.dpi = %ld.", dpi);
 
 init_dpi_end:
-    free(resource);
+    FREE(resource);
 
     if (database != NULL) {
         xcb_xrm_database_free(database);

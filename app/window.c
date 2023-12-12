@@ -51,7 +51,7 @@ void window_update_role(GWMWindow *win, xcb_get_property_reply_t *prop)
     win->role = new_role;
     DEBUG("WM_WINDOW_ROLE changed to \"%s\"", win->role);
 
-    free(prop);
+    FREE(prop);
 }
 
 void window_update_icon(GWMWindow *win, xcb_get_property_reply_t *prop)
@@ -154,7 +154,7 @@ void window_update_name(GWMWindow *win, xcb_get_property_reply_t *prop)
     const int len = xcb_get_property_value_length(prop);
     char *name = g_strndup(xcb_get_property_value(prop), len);
     win->name = (name);
-    free(name);
+    FREE(name);
 
     GWMContainer* con = container_by_window_id(win->id);
     if (con != NULL && con->titleFormat != NULL) {
@@ -166,7 +166,7 @@ void window_update_name(GWMWindow *win, xcb_get_property_reply_t *prop)
 
     win->usesNetWMName = true;
 
-    free(prop);
+    FREE(prop);
 }
 
 void window_update_class(GWMWindow *win, xcb_get_property_reply_t *prop)
@@ -193,7 +193,7 @@ void window_update_class(GWMWindow *win, xcb_get_property_reply_t *prop)
     }
     DEBUG("WM_CLASS changed to %s (instance), %s (class)", win->classInstance, win->classClass);
 
-    free(prop);
+    FREE(prop);
 }
 
 void window_update_leader(GWMWindow *win, xcb_get_property_reply_t *prop)
@@ -207,7 +207,7 @@ void window_update_leader(GWMWindow *win, xcb_get_property_reply_t *prop)
 
     xcb_window_t *leader = xcb_get_property_value(prop);
     if (leader == NULL) {
-        free(prop);
+        FREE(prop);
         return;
     }
 
@@ -215,7 +215,7 @@ void window_update_leader(GWMWindow *win, xcb_get_property_reply_t *prop)
 
     win->leader = *leader;
 
-    free(prop);
+    FREE(prop);
 }
 
 void window_update_machine(GWMWindow *win, xcb_get_property_reply_t *prop)
@@ -230,13 +230,13 @@ void window_update_machine(GWMWindow *win, xcb_get_property_reply_t *prop)
     win->machine = g_strndup((char *)xcb_get_property_value(prop), xcb_get_property_value_length(prop));
     DEBUG("WM_CLIENT_MACHINE changed to \"%s\"", win->machine);
 
-    free(prop);
+    FREE(prop);
 }
 
 void window_update_type(GWMWindow *window, xcb_get_property_reply_t *reply)
 {
     xcb_atom_t new_type = xcb_gwm_get_preferred_window_type(reply);
-    free(reply);
+    FREE(reply);
     if (new_type == XCB_NONE) {
         DEBUG("cannot read _NET_WM_WINDOW_TYPE from window.");
         return;
@@ -258,15 +258,13 @@ void window_update_name_legacy(GWMWindow *win, xcb_get_property_reply_t *prop)
 
     /* ignore update when the window is known to already have a UTF-8 name */
     if (win->usesNetWMName) {
-        free(prop);
+        FREE(prop);
         return;
     }
 
     FREE(win->name);
     const int len = xcb_get_property_value_length(prop);
-    char *name = g_strndup(xcb_get_property_value(prop), len);
-    win->name = (name);
-    free(name);
+    win->name = g_strndup(xcb_get_property_value(prop), len);
 
     GWMContainer *con = container_by_window_id(win->id);
     if (con != NULL && con->titleFormat != NULL) {
@@ -279,7 +277,7 @@ void window_update_name_legacy(GWMWindow *win, xcb_get_property_reply_t *prop)
 
     win->nameXChanged = true;
 
-    free(prop);
+    FREE(prop);
 }
 
 void window_update_strut_partial(GWMWindow *win, xcb_get_property_reply_t *prop)
@@ -292,7 +290,7 @@ void window_update_strut_partial(GWMWindow *win, xcb_get_property_reply_t *prop)
 
     uint32_t *strut;
     if (!(strut = xcb_get_property_value(prop))) {
-        free(prop);
+        FREE(prop);
         return;
     }
 
@@ -300,7 +298,7 @@ void window_update_strut_partial(GWMWindow *win, xcb_get_property_reply_t *prop)
 
     win->reserved = (GWMReserveEdgePixels){strut[0], strut[1], strut[2], strut[3]};
 
-    free(prop);
+    FREE(prop);
 }
 
 void window_update_transient_for(GWMWindow *win, xcb_get_property_reply_t *prop)
@@ -314,7 +312,7 @@ void window_update_transient_for(GWMWindow *win, xcb_get_property_reply_t *prop)
 
     xcb_window_t transient_for;
     if (!xcb_icccm_get_wm_transient_for_from_reply(&transient_for, prop)) {
-        free(prop);
+        FREE(prop);
         return;
     }
 
@@ -322,7 +320,7 @@ void window_update_transient_for(GWMWindow *win, xcb_get_property_reply_t *prop)
 
     win->transientFor = transient_for;
 
-    free(prop);
+    FREE(prop);
 }
 
 void window_update_hints(GWMWindow *win, xcb_get_property_reply_t *prop, bool *urgencyHint)
@@ -341,7 +339,7 @@ void window_update_hints(GWMWindow *win, xcb_get_property_reply_t *prop, bool *u
 
     if (!xcb_icccm_get_wm_hints_from_reply(&hints, prop)) {
         DEBUG("Could not get WM_HINTS");
-        free(prop);
+        FREE(prop);
         return;
     }
 
@@ -354,7 +352,7 @@ void window_update_hints(GWMWindow *win, xcb_get_property_reply_t *prop, bool *u
         *urgencyHint = (xcb_icccm_wm_hints_get_urgency(&hints) != 0);
     }
 
-    free(prop);
+    FREE(prop);
 }
 
 bool window_update_motif_hints(GWMWindow *win, xcb_get_property_reply_t *prop, GWMBorderStyle *motifBorderStyle)

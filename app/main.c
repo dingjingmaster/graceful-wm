@@ -89,6 +89,7 @@ xcb_visualtype_t*                       gVisualType = NULL;
 xcb_key_symbols_t*                      gKeySymbols = NULL;
 xcb_timestamp_t                         gLastTimestamp = XCB_CURRENT_TIME;
 
+struct rlimit                           gOriginalRLimitCore;
 struct ev_loop*                         gMainLoop = NULL;
 static struct ev_prepare*               gsXcbPrepare = NULL;
 
@@ -119,6 +120,8 @@ GWM_REST_ATOMS_XMACRO
 int main(int argc, char* argv[])
 {
     setlocale (LC_ALL, "");
+
+    getrlimit(RLIMIT_CORE, &gOriginalRLimitCore);
 
     g_log_set_writer_func (log_handler, NULL, NULL);
 
@@ -556,12 +559,12 @@ static void xcb_prepare_cb(EV_P_ ev_prepare *w, int revents)
                 xcb_generic_error_t *error = (xcb_generic_error_t *)event;
                 DEBUG("X11 Error received (probably harmless)! sequence 0x%x, error_code = %d", error->sequence, error->error_code);
             }
-            free(event);
+            FREE(event);
             continue;
         }
         int type = (event->response_type & 0x7F);
         handler_handle_event(type, event);
-        free(event);
+        FREE(event);
     }
 
     xcb_flush(gConn);

@@ -95,11 +95,11 @@ bool key_binding_load_keymap(void)
             ERROR(_("Could not get _XKB_RULES_NAMES atom from root window, falling back to defaults."));
         }
         newKeymap = xkb_keymap_new_from_names(gXKBContext, &names, 0);
-        free((char *)names.rules);
-        free((char *)names.model);
-        free((char *)names.layout);
-        free((char *)names.variant);
-        free((char *)names.options);
+//        FREE((char*)names.rules);
+//        FREE((char*)names.model);
+//        FREE((char*)names.layout);
+//        FREE((char*)names.variant);
+//        FREE((char*)names.options);
         if (newKeymap == NULL) {
             ERROR(_("xkb_keymap_new_from_names failed"));
             return false;
@@ -246,7 +246,7 @@ void key_binding_translate_keysyms(void)
         GWMBindingKeycode* bindingKeycode = NULL;
         TAILQ_FOREACH (bindingKeycode, &(bind->keycodesHead), keycodes) {
             char* tmp = g_strdup_printf("%s %d", keycodes, bindingKeycode->keycode);
-            free(keycodes);
+            FREE(keycodes);
             keycodes = tmp;
             numKeycodes++;
 
@@ -266,7 +266,7 @@ void key_binding_translate_keysyms(void)
             }
         }
         DEBUG(_("state=0x%x, cfg=\"%s\", sym=0x%x → keycodes%s (%d)"), bind->eventStateMask, bind->symbol, keysym, keycodes, numKeycodes);
-        free(keycodes);
+        FREE(keycodes);
     }
 
 out:
@@ -337,7 +337,7 @@ GWMBinding* key_binding_configure_binding(
         if (!util_parse_long(inputCode, &keycode, 10)) {
             ERROR(_("Could not parse \"%s\" as an input code, ignoring this binding."), inputCode);
             {
-                free (newBinding);
+                FREE(newBinding);
                 newBinding = NULL;
             }
             return NULL;
@@ -566,24 +566,24 @@ static int fill_rmlvo_from_root(struct xkb_rule_names *xkbNames)
     propCookie = xcb_get_property_unchecked(gConn, false, gRoot, atomReply->atom, XCB_GET_PROPERTY_TYPE_ANY, 0, contentMaxWords);
     propReply = xcb_get_property_reply(gConn, propCookie, NULL);
     if (NULL == propReply) {
-        free(atomReply);
+        FREE(atomReply);
         return -1;
     }
 
     if (xcb_get_property_value_length(propReply) > 0 && propReply->bytes_after > 0) {
         contentMaxWords += ceil(propReply->bytes_after / 4.0);
-        free(propReply);
+        FREE(propReply);
         propCookie = xcb_get_property_unchecked(gConn, false, gRoot, atomReply->atom, XCB_GET_PROPERTY_TYPE_ANY, 0, contentMaxWords);
         propReply = xcb_get_property_reply(gConn, propCookie, NULL);
         if (NULL == propReply) {
-            free(atomReply);
+            FREE(atomReply);
             return -1;
         }
     }
 
     if (xcb_get_property_value_length(propReply) == 0) {
-        free(atomReply);
-        free(propReply);
+        FREE(atomReply);
+        FREE(propReply);
         return -1;
     }
 
@@ -621,8 +621,8 @@ static int fill_rmlvo_from_root(struct xkb_rule_names *xkbNames)
         remaining -= (len + 1);
     }
 
-    free(atomReply);
-    free(propReply);
+    FREE(atomReply);
+    FREE(propReply);
 
     return 0;
 }
@@ -772,12 +772,12 @@ static void reorder_bindings_of_mode(GWMConfigMode *mode)
 //        TAILQ_INSERT_TAIL(reordered, current, bindings);
         reordered = g_list_append (reordered, current);
     }
-    free(tmp);
+    FREE(tmp);
 
 //    assert(TAILQ_EMPTY(mode->bindings));
 
     /* Free the old bindings_head, which is now empty. */
-    free(mode->bindings);
+    FREE(mode->bindings);
 
     mode->bindings = reordered;
 }

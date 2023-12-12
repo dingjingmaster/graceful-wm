@@ -71,11 +71,11 @@ GWMDragResult drag_pointer(GWMContainer* con, const xcb_button_press_event_t *ev
     cookie = xcb_grab_pointer(gConn, false, gRoot, XCB_EVENT_MASK_BUTTON_RELEASE | XCB_EVENT_MASK_POINTER_MOTION, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, confineTo, useThreshold ? XCB_NONE : xcursor, XCB_CURRENT_TIME);
     if ((reply = xcb_grab_pointer_reply(gConn, cookie, &error)) == NULL) {
         ERROR("Could not grab pointer (error_code = %d)", error->error_code);
-        free(error);
+        FREE(error);
         return DRAG_ABORT;
     }
 
-    free(reply);
+    FREE(reply);
 
     xcb_grab_keyboard_reply_t*  keyBReply;
     xcb_grab_keyboard_cookie_t  keyBCookie;
@@ -83,11 +83,11 @@ GWMDragResult drag_pointer(GWMContainer* con, const xcb_button_press_event_t *ev
     keyBCookie = xcb_grab_keyboard(gConn, false, gRoot, XCB_CURRENT_TIME, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC);
     if ((keyBReply = xcb_grab_keyboard_reply(gConn, keyBCookie, &error)) == NULL) {
         ERROR("Could not grab keyboard (error_code = %d)", error->error_code);
-        free(error);
+        FREE(error);
         xcb_ungrab_pointer(gConn, XCB_CURRENT_TIME);
         return DRAG_ABORT;
     }
-    free(keyBReply);
+    FREE(keyBReply);
 
     /* Go into our own event loop */
     struct drag_x11_cb loop = {
@@ -392,7 +392,7 @@ static bool drain_drag_events(EV_P, struct drag_x11_cb *dragLoop)
         if (event->response_type == 0) {
             xcb_generic_error_t *error = (xcb_generic_error_t *) event;
             DEBUG("X11 Error received (probably harmless)! sequence 0x%x, error_code = %d", error->sequence, error->error_code);
-            free(event);
+            FREE(event);
             continue;
         }
 
@@ -434,7 +434,7 @@ static bool drain_drag_events(EV_P, struct drag_x11_cb *dragLoop)
         }
 
         if (last_motion_notify != (xcb_motion_notify_event_t *)event)
-            free(event);
+            FREE(event);
 
         if (dragLoop->result != DRAGGING) {
             ev_break(EV_A_ EVBREAK_ONE);
@@ -442,7 +442,7 @@ static bool drain_drag_events(EV_P, struct drag_x11_cb *dragLoop)
                 break;
             }
             else {
-                free(last_motion_notify);
+                FREE(last_motion_notify);
                 return true;
             }
         }

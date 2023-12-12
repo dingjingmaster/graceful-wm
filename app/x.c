@@ -111,9 +111,12 @@ void x_container_init(GWMContainer *con)
     xcb_change_property(gConn, XCB_PROP_MODE_REPLACE, con->frame.id, XCB_ATOM_WM_CLASS, XCB_ATOM_STRING, 8, (strlen("graceful-wm-frame") + 1) * 2, "graceful-wm-frame\0graceful-wm-frame\0");
 
     GWMContainerState* state = g_malloc0 (sizeof(GWMContainerState));
+    EXIT_IF_MEM_IS_NULL(state);
+
     state->id = con->frame.id;
     state->mapped = false;
     state->initial = true;
+    state->name = NULL;
     DEBUG(_("Adding window 0x%08x to lists"), state->id);
 
     CIRCLEQ_INSERT_HEAD(&gStateHead, state, state);
@@ -246,7 +249,7 @@ void x_draw_decoration(GWMContainer *con)
         !con->pixmap_recreated &&
         !con->mark_changed &&
         memcmp(p, con->deco_render_params, sizeof(struct deco_render_params)) == 0) {
-        free(p);
+        FREE(p);
         goto copy_pixmaps;
     }
 
@@ -373,7 +376,7 @@ void x_draw_decoration(GWMContainer *con)
 
             char *buf;
             sasprintf(&buf, "%s[%s]", formatted_mark, mark->name);
-            free(formatted_mark);
+            FREE(formatted_mark);
             formatted_mark = buf;
         }
 
@@ -403,7 +406,7 @@ void x_draw_decoration(GWMContainer *con)
             char *_title;
             char *tree = con_get_tree_representation(con);
             sasprintf(&_title, "i3: %s", tree);
-            free(tree);
+            FREE(tree);
 
             title = i3string_from_utf8(_title);
             FREE(_title);
@@ -519,6 +522,7 @@ void x_push_node(GWMContainer *con)
     GWMRect rect = con->rect;
 
     state = state_for_frame(con->frame.id);
+    g_return_if_fail(state);
 
     if (state->name != NULL) {
         DEBUG("pushing name %s for con %p", state->name, con);
@@ -782,7 +786,7 @@ void x_push_changes(GWMContainer *con)
                 xcb_change_window_attributes(gConn, gRoot, XCB_CW_EVENT_MASK, (uint32_t[]){ROOT_EVENT_MASK});
             }
 
-            free(pointerreply);
+            FREE(pointerreply);
         }
         gWarpTo = NULL;
     }
@@ -965,7 +969,7 @@ void x_window_kill(xcb_window_t window, GWMKillWindow killWindow)
     INFO("Sending WM_DELETE to the client");
     xcb_send_event(gConn, false, window, XCB_EVENT_MASK_NO_EVENT, (char *)ev);
     xcb_flush(gConn);
-    free(event);
+    FREE(event);
 }
 
 void x_mask_event_mask(uint32_t mask)
@@ -1040,7 +1044,7 @@ static void _x_con_kill(GWMContainer* con)
     CIRCLEQ_REMOVE(&gOldStateHead, state, oldState);
     TAILQ_REMOVE(&gInitialMappingHead, state, initialMappingOrder);
     FREE(state->name);
-    free(state);
+    FREE(state);
 
     /* Invalidate focused_id to correctly focus new windows with the same ID */
     if (con->frame.id == gFocusedID) {

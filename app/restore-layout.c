@@ -49,12 +49,12 @@ void restore_connect(void)
         while (!TAILQ_EMPTY(&gsStateHead)) {
             state = TAILQ_FIRST(&gsStateHead);
             TAILQ_REMOVE(&gsStateHead, state, state);
-            free(state);
+            FREE(state);
         }
 
         xcb_disconnect(gsRestoreConn);
-        free(gsXCBWatcher);
-        free(gsXCBPrepare);
+        FREE(gsXCBWatcher);
+        FREE(gsXCBPrepare);
     }
 
     int screen;
@@ -153,7 +153,7 @@ static void restore_xcb_prepare_cb(EV_P_ ev_prepare *w, int rEvents)
         if (event->response_type == 0) {
             xcb_generic_error_t *error = (xcb_generic_error_t *)event;
             DEBUG("X11 Error received (probably harmless)! sequence 0x%x, error_code = %d", error->sequence, error->error_code);
-            free(event);
+            FREE(event);
             continue;
         }
 
@@ -161,7 +161,7 @@ static void restore_xcb_prepare_cb(EV_P_ ev_prepare *w, int rEvents)
 
         restore_handle_event(type, event);
 
-        free(event);
+        FREE(event);
     }
     xcb_flush(gsRestoreConn);
 }
@@ -251,7 +251,7 @@ static void update_placeholder_contents(GWMPlaceholderState* state)
                        (n * (1 + TEXT_PADDING)) + TEXT_PADDING,
                        state->rect.width - 2 * TEXT_PADDING);
         n++;
-        free(serialized);
+        FREE(serialized);
     }
 
 //    i3String *line = i3string_from_utf8("⌚");

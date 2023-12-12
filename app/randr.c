@@ -90,14 +90,14 @@ void randr_init(int *eventBase, bool disableRandr15)
         xcb_randr_query_version_reply(gConn, xcb_randr_query_version(gConn, XCB_RANDR_MAJOR_VERSION, XCB_RANDR_MINOR_VERSION), &err);
     if (err != NULL) {
         ERROR("Could not query RandR version: X11 error code %d", err->error_code);
-        free(err);
+        FREE(err);
         fallback_to_root_output();
         return;
     }
 
     gsHasRandr15 = (randr_version->major_version >= 1) && (randr_version->minor_version >= 5) && !disableRandr15;
 
-    free(randr_version);
+    FREE(randr_version);
 
     randr_query_outputs();
 
@@ -659,7 +659,7 @@ static bool randr_query_outputs_15(void)
     xcb_randr_get_monitors_reply_t *monitors = xcb_randr_get_monitors_reply(gConn, xcb_randr_get_monitors(gConn, gRoot, true), &err);
     if (err != NULL) {
         ERROR("Could not get RandR monitors: X11 error code %d", err->error_code);
-        free(err);
+        FREE(err);
         return false;
     }
 
@@ -677,11 +677,11 @@ static bool randr_query_outputs_15(void)
         xcb_get_atom_name_reply_t *atom_reply = xcb_get_atom_name_reply(gConn, xcb_get_atom_name(gConn, monitor_info->name), &err);
         if (err != NULL) {
             ERROR("Could not get RandR monitor name: X11 error code %d", err->error_code);
-            free(err);
+            FREE(err);
             continue;
         }
         char *name = g_strdup_printf("%.*s", xcb_get_atom_name_name_length(atom_reply), xcb_get_atom_name_name(atom_reply));
-        free(atom_reply);
+        FREE(atom_reply);
 
         GWMOutput* newO = get_output_by_name(name, false);
         if (newO == NULL) {
@@ -701,7 +701,7 @@ static bool randr_query_outputs_15(void)
                         SLIST_INSERT_HEAD(&newO->namesHead, output_name, names);
                     }
                     else {
-                        free(oname);
+                        FREE(oname);
                     }
                 }
                 FREE(info);
@@ -734,9 +734,9 @@ static bool randr_query_outputs_15(void)
                 monitor_info->x, monitor_info->y, monitor_info->width, monitor_info->height,
                 monitor_info->width_in_millimeters, monitor_info->height_in_millimeters,
                 monitor_info->primary, monitor_info->automatic);
-        free(name);
+        FREE(name);
     }
-    free(monitors);
+    FREE(monitors);
     return true;
 #endif
 }
@@ -785,7 +785,7 @@ static void handle_output(xcb_connection_t *conn, xcb_randr_output_t id, xcb_ran
     icookie = xcb_randr_get_crtc_info(conn, output->crtc, cts);
     if ((crtc = xcb_randr_get_crtc_info_reply(conn, icookie, NULL)) == NULL) {
         DEBUG("Skipping output %s: could not get CRTC (%p)", output_primary_name(newO), crtc);
-        free(newO);
+        FREE(newO);
         return;
     }
 
@@ -794,7 +794,7 @@ static void handle_output(xcb_connection_t *conn, xcb_randr_output_t id, xcb_ran
     const bool update_w = util_update_if_necessary(&(newO->rect.width), crtc->width);
     const bool update_h = util_update_if_necessary(&(newO->rect.height), crtc->height);
     const bool updated = update_x || update_y || update_w || update_h;
-    free(crtc);
+    FREE(crtc);
     newO->active = (newO->rect.width != 0 && newO->rect.height != 0);
     if (!newO->active) {
         DEBUG("width/height 0/0, disabling output");
@@ -859,7 +859,7 @@ static void randr_query_outputs_14(void)
         }
 
         handle_output(gConn, randr_outputs[i], output, cts, res);
-        free(output);
+        FREE(output);
     }
 
     FREE(res);

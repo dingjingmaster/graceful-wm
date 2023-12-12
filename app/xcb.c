@@ -33,26 +33,25 @@ xcb_visualid_t xcb_gwm_get_visualid_by_depth(uint16_t depth)
 
 void xcb_gwm_fake_configure_notify(xcb_connection_t *conn, xcb_rectangle_t r, xcb_window_t window, int borderWidth)
 {
-    void* event = calloc(32, 1);
-    xcb_configure_notify_event_t *generated_event = event;
+    xcb_configure_notify_event_t *generatedEvent = g_malloc0(sizeof(xcb_configure_notify_event_t));
 
-    generated_event->event = window;
-    generated_event->window = window;
-    generated_event->response_type = XCB_CONFIGURE_NOTIFY;
+    EXIT_IF_MEM_IS_NULL(generatedEvent);
 
-    generated_event->x = r.x;
-    generated_event->y = r.y;
-    generated_event->width = r.width;
-    generated_event->height = r.height;
+    generatedEvent->event = window;
+    generatedEvent->window = window;
+    generatedEvent->response_type = XCB_CONFIGURE_NOTIFY;
+    generatedEvent->x = r.x;
+    generatedEvent->y = r.y;
+    generatedEvent->width = r.width;
+    generatedEvent->height = r.height;
+    generatedEvent->border_width = borderWidth;
+    generatedEvent->above_sibling = XCB_NONE;
+    generatedEvent->override_redirect = false;
 
-    generated_event->border_width = borderWidth;
-    generated_event->above_sibling = XCB_NONE;
-    generated_event->override_redirect = false;
-
-    xcb_send_event(conn, false, window, XCB_EVENT_MASK_STRUCTURE_NOTIFY, (char *)generated_event);
+    xcb_send_event(conn, false, window, XCB_EVENT_MASK_STRUCTURE_NOTIFY, (char*) generatedEvent);
     xcb_flush(conn);
 
-    free(event);
+    FREE(generatedEvent);
 }
 
 void xcb_gwm_fake_absolute_configure_notify(GWMContainer *con)
@@ -104,7 +103,7 @@ void xcb_gwm_send_take_focus(xcb_window_t window, xcb_timestamp_t timeStamp)
     DEBUG("Sending WM_TAKE_FOCUS to the client");
     xcb_send_event(gConn, false, window, XCB_EVENT_MASK_NO_EVENT, (char *)ev);
 
-    free(event);
+    FREE(event);
 }
 
 xcb_atom_t xcb_gwm_get_preferred_window_type(xcb_get_property_reply_t *reply)

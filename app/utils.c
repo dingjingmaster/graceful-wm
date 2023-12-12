@@ -47,7 +47,7 @@ uint32_t util_aio_get_mod_mask_for(uint32_t keySym, xcb_key_symbols_t *symbols)
 
     uint32_t result = util_get_mod_mask_for(keySym, symbols, modMapR);
 
-    free(modMapR);
+    FREE(modMapR);
 
     return result;
 }
@@ -69,7 +69,7 @@ uint32_t util_get_mod_mask_for(uint32_t keySym, xcb_key_symbols_t *symbols, xcb_
                 if (*code != modCode) {
                     continue;
                 }
-                free (codes);
+                FREE(codes);
                 return (1 << mod);
             }
         }
@@ -101,7 +101,7 @@ char* util_resolve_tilde(const char *path)
     head = g_strndup(path, tail ? (size_t)(tail - path) : strlen(path));
 
     int res = glob(head, GLOB_TILDE, NULL, &globBuf);
-    free(head);
+    FREE(head);
     /* no match, or many wildcard matches are bad */
     if (res == GLOB_NOMATCH || globBuf.gl_pathc != 1) {
         result = g_strdup(path);
@@ -150,7 +150,7 @@ ssize_t util_slurp(const char *path, char **buf)
     if ((ssize_t)n != stbuf.st_size) {
         ERROR("File \"%s\" could not be read entirely: got %zd, want %" PRIi64 "", path, n, (int64_t)stbuf.st_size);
         {
-            g_free (*buf);
+            FREE(*buf);
             *buf = NULL;
         }
         return -1;

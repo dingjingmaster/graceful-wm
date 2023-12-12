@@ -16,9 +16,12 @@
 #include <xcb/xcb_aux.h>
 #include <cairo/cairo.h>
 #include <pango/pango.h>
+#include <sys/resource.h>
 #include <xcb/xcb_icccm.h>
 #include <xcb/xcb_keysyms.h>
 #include <libsn/sn-launcher.h>
+
+#define SD_LISTEN_FDS_START 3
 
 /** Mouse buttons */
 #define XCB_BUTTON_CLICK_LEFT       XCB_BUTTON_INDEX_1
@@ -513,9 +516,9 @@
 
 
 #define FREE(x) \
-{                       \
-    if (x) free (x);    \
-    x = NULL;           \
+{ \
+    if (x) g_free (x);          \
+    x = NULL;                   \
 }
 
 #define GREP_FIRST(dest, head, condition) \
@@ -640,6 +643,7 @@ typedef struct OutputHead                   GWMOutputHead;              // ok
 typedef struct ColorPixel                   GWMColorPixel;              // ok
 typedef struct OutputName                   GWMOutputName;              // ok
 typedef struct Assignment                   GWMAssignment;              // ok
+typedef struct IgnoreEvent                  GWMIgnoreEvent;             // ok
 typedef struct BindingHead                  GWMBindingHead;             // ok
 typedef struct RenderParams                 GWMRenderParams;            // ok
 typedef struct CommandResult                GWMCommandResult;           // ok
@@ -844,6 +848,15 @@ enum FocusWarping
     FOCUS_WRAPPING_ON = 1,
     FOCUS_WRAPPING_FORCE = 2,
     FOCUS_WRAPPING_WORKSPACE = 3
+};
+
+struct IgnoreEvent
+{
+    int                         sequence;
+    int                         responseType;
+    time_t                      added;
+
+    SLIST_ENTRY(IgnoreEvent)    ignoreEvents;
 };
 
 struct Regex
@@ -1083,7 +1096,7 @@ struct StartupSequence
     char*                                       workspace;         // workspace on which this startup was initiated
     SnLauncherContext*                          context;           // libstartup-notification context for this launch
     time_t                                      deleteAt;          // time at which this sequence should be deleted (after it was marked as completed)
-    GQueue                                      sequences;
+    TAILQ_ENTRY(StartupSequence)                sequences;
 };
 
 

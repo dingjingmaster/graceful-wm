@@ -14,6 +14,7 @@ extern bool                                     gXKBSupported;
 extern bool                                     gShapeSupported;
 
 extern int                                      gXKBBase;
+extern int                                      gListenFds;
 extern int                                      gRandrBase;
 extern int                                      gShapeBase;
 extern uint8_t                                  gRootDepth;
@@ -55,6 +56,8 @@ extern xcb_randr_get_output_primary_reply_t*    gPrimary;
 extern SLIST_HEAD(colorPixelHead, ColorPixel)   gColorPixels;
 
 extern GWMConfig                                gConfig;
+
+extern struct rlimit                            gOriginalRLimitCore;
 
 // atom declare
 #define GWM_ATOM_MACRO(atom) extern xcb_atom_t A_##atom;
