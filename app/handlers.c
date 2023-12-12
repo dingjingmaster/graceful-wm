@@ -201,7 +201,7 @@ void handler_handle_event(int type, xcb_generic_event_t *event)
                 DEBUG("Ignoring map notify event for sequence %d.", state->sequence);
             }
             else {
-                DEBUG("xkb map notify, sequence %d, time %d\n", state->sequence, state->time);
+                DEBUG("xkb map notify, sequence %d, time %d", state->sequence, state->time);
                 handler_add_ignore_event(event->sequence, type);
                 xcb_key_symbols_free(gKeySyms);
                 gKeySyms = xcb_key_symbols_alloc(gConn);
@@ -322,7 +322,7 @@ void handler_handle_event(int type, xcb_generic_event_t *event)
             break;
 
         default:
-            /* DEBUG("Unhandled event of type %d\n", type); */
+            /* DEBUG("Unhandled event of type %d", type); */
             break;
     }
 }
@@ -377,7 +377,7 @@ static void handler_handle_expose_event(xcb_expose_event_t *event)
     DEBUG("window = %08x", event->window);
 
     if ((parent = container_by_frame_id(event->window)) == NULL) {
-        INFO("expose event for unknown window, ignoring\n");
+        INFO("expose event for unknown window, ignoring");
         return;
     }
 
@@ -540,7 +540,7 @@ static void handle_key_press(xcb_key_press_event_t *event)
 
     gLastTimestamp = event->time;
 
-    DEBUG("%s %d, state raw = 0x%x\n", (key_release ? "KeyRelease" : "KeyPress"), event->detail, event->state);
+    DEBUG("%s %d, state raw = 0x%x", (key_release ? "KeyRelease" : "KeyPress"), event->detail, event->state);
 
     GWMBinding *bind = key_binding_get_binding_from_xcb_event((xcb_generic_event_t *)event);
     if (bind == NULL) {
@@ -563,7 +563,7 @@ static void handle_button_press(xcb_button_press_event_t *event)
 
     const uint32_t mod = (gConfig.floatingModifier & 0xFFFF);
     const bool mod_pressed = (mod != 0 && (event->state & mod) == mod);
-    DEBUG("floating_mod = %d, detail = %d\n", mod_pressed, event->detail);
+    DEBUG("floating_mod = %d, detail = %d", mod_pressed, event->detail);
     if ((con = container_by_window_id(event->event))) {
         route_click(con, event, mod_pressed, CLICK_INSIDE);
         return;
@@ -755,13 +755,13 @@ static void route_click(GWMContainer* con, xcb_button_press_event_t *event, bool
         }
 
         if (dest == CLICK_DECORATION && is_right_click) {
-            DEBUG("floating resize due to decoration right click\n");
+            DEBUG("floating resize due to decoration right click");
             floating_resize_window(floatingcon, proportional, event);
             return;
         }
 
         if (dest == CLICK_BORDER && is_left_or_right_click) {
-            DEBUG("floating resize due to border click\n");
+            DEBUG("floating resize due to border click");
             floating_resize_window(floatingcon, proportional, event);
             return;
         }
@@ -814,7 +814,7 @@ static bool tiling_resize(GWMContainer* con, xcb_button_press_event_t *event, co
     /* check if this was a click on the window border (and on which one) */
     GWMRect bsr = container_border_style_rect(con);
     DEBUG("BORDER x = %d, y = %d for con %p, window 0x%08x", event->event_x, event->event_y, con, event->event);
-    DEBUG("checks for right >= %d\n", con->windowRect.x + con->windowRect.width);
+    DEBUG("checks for right >= %d", con->windowRect.x + con->windowRect.width);
     if (dest == CLICK_DECORATION) {
         return tiling_resize_for_border(con, BORDER_TOP, event, use_threshold);
     }
@@ -874,7 +874,7 @@ static bool floating_mod_on_tiled_client(GWMContainer* con, xcb_button_press_eve
 
 static bool tiling_resize_for_border(GWMContainer* con, GWMBorder border, xcb_button_press_event_t *event, bool use_threshold)
 {
-    DEBUG("border = %d, con = %p\n", border, con);
+    DEBUG("border = %d, con = %p", border, con);
     GWMContainer *second = NULL;
     GWMContainer *first = con;
     GWMDirection search_direction;
@@ -892,18 +892,18 @@ static bool tiling_resize_for_border(GWMContainer* con, GWMBorder border, xcb_bu
             search_direction = D_DOWN;
             break;
         default: {
-            ERROR("BUG: invalid border value %d\n", border);
+            ERROR("BUG: invalid border value %d", border);
             return false;
         }
     }
 
     bool res = resize_find_tiling_participants(&first, &second, search_direction, false);
     if (!res) {
-        DEBUG("No second container in this direction found.\n");
+        DEBUG("No second container in this direction found.");
         return false;
     }
     if (first->fullScreenMode != second->fullScreenMode) {
-        DEBUG("Avoiding resize between containers with different fullscreen modes, %d != %d\n", first->fullScreenMode, second->fullScreenMode);
+        DEBUG("Avoiding resize between containers with different fullscreen modes, %d != %d", first->fullScreenMode, second->fullScreenMode);
         return false;
     }
 
@@ -921,7 +921,7 @@ static bool tiling_resize_for_border(GWMContainer* con, GWMBorder border, xcb_bu
 
     resize_graphical_handler(first, second, orientation, event, use_threshold);
 
-    DEBUG("After resize handler, rendering\n");
+    DEBUG("After resize handler, rendering");
     tree_render();
 
     return true;
@@ -956,13 +956,13 @@ static void handle_unmap_notify_event(xcb_unmap_notify_event_t *event)
         }
 
         cookie = xcb_get_input_focus(gConn);
-        DEBUG("ignore_unmap = %d for frame of container %p\n", con->ignoreUnmap, con);
+        DEBUG("ignore_unmap = %d for frame of container %p", con->ignoreUnmap, con);
         goto ignore_end;
     }
 
     cookie = xcb_get_input_focus(gConn);
     if (con->ignoreUnmap > 0) {
-        DEBUG("ignore_unmap = %d, dec\n", con->ignoreUnmap);
+        DEBUG("ignore_unmap = %d, dec", con->ignoreUnmap);
         con->ignoreUnmap--;
         goto ignore_end;
     }
@@ -1075,9 +1075,9 @@ static void handle_enter_notify(xcb_enter_notify_event_t *event)
     gLastTimestamp = event->time;
 
     DEBUG("enter_notify for %08x, mode = %d, detail %d, serial %d", event->event, event->mode, event->detail, event->sequence);
-    DEBUG("coordinates %d, %d\n", event->event_x, event->event_y);
+    DEBUG("coordinates %d, %d", event->event_x, event->event_y);
     if (event->mode != XCB_NOTIFY_MODE_NORMAL) {
-        DEBUG("This was not a normal notify, ignoring\n");
+        DEBUG("This was not a normal notify, ignoring");
         return;
     }
     if (handler_event_is_ignored(event->sequence, XCB_ENTER_NOTIFY)) {
@@ -1092,7 +1092,7 @@ static void handle_enter_notify(xcb_enter_notify_event_t *event)
     }
 
     if (con == NULL || con->parent->type == CT_DOCK_AREA) {
-        DEBUG("Getting screen at %d x %d\n", event->root_x, event->root_y);
+        DEBUG("Getting screen at %d x %d", event->root_x, event->root_y);
         check_crossing_screen_boundary(event->root_x, event->root_y);
         return;
     }
@@ -1139,20 +1139,20 @@ static void handle_client_message(xcb_client_message_event_t *event)
             || (event->data.data32[1] != A__NET_WM_STATE_FULLSCREEN
                 && event->data.data32[1] != A__NET_WM_STATE_DEMANDS_ATTENTION
                 && event->data.data32[1] != A__NET_WM_STATE_STICKY)) {
-            DEBUG("Unknown atom in clientmessage of type %d\n", event->data.data32[1]);
+            DEBUG("Unknown atom in clientmessage of type %d", event->data.data32[1]);
             return;
         }
 
         GWMContainer* con = container_by_window_id(event->window);
         if (con == NULL) {
-            DEBUG("Could not get window for client message\n");
+            DEBUG("Could not get window for client message");
             return;
         }
 
         if (event->data.data32[1] == A__NET_WM_STATE_FULLSCREEN) {
             if ((con->fullScreenMode!= CF_NONE && (event->data.data32[0] == _NET_WM_STATE_REMOVE || event->data.data32[0] == _NET_WM_STATE_TOGGLE))
                 || (con->fullScreenMode == CF_NONE && (event->data.data32[0] == _NET_WM_STATE_ADD || event->data.data32[0] == _NET_WM_STATE_TOGGLE))) {
-                DEBUG("toggling fullscreen\n");
+                DEBUG("toggling fullscreen");
                 container_toggle_full_screen(con, CF_OUTPUT);
             }
         }
@@ -1169,7 +1169,7 @@ static void handle_client_message(xcb_client_message_event_t *event)
             }
         }
         else if (event->data.data32[1] == A__NET_WM_STATE_STICKY) {
-            DEBUG("Received a client message to modify _NET_WM_STATE_STICKY.\n");
+            DEBUG("Received a client message to modify _NET_WM_STATE_STICKY.");
             if (event->data.data32[0] == _NET_WM_STATE_ADD)
                 con->sticky = true;
             else if (event->data.data32[0] == _NET_WM_STATE_REMOVE)
@@ -1177,7 +1177,7 @@ static void handle_client_message(xcb_client_message_event_t *event)
             else if (event->data.data32[0] == _NET_WM_STATE_TOGGLE)
                 con->sticky = !con->sticky;
 
-            DEBUG("New sticky status for con = %p is %i.\n", con, con->sticky);
+            DEBUG("New sticky status for con = %p is %i.", con, con->sticky);
             extend_wm_hint_update_sticky(con->window->id, con->sticky);
             output_push_sticky_windows(gFocused);
             extend_wm_hint_update_wm_desktop();
@@ -1190,22 +1190,22 @@ static void handle_client_message(xcb_client_message_event_t *event)
             return;
         }
 
-        DEBUG("_NET_ACTIVE_WINDOW: Window 0x%08x should be activated\n", event->window);
+        DEBUG("_NET_ACTIVE_WINDOW: Window 0x%08x should be activated", event->window);
 
         GWMContainer* con = container_by_window_id(event->window);
         if (con == NULL) {
-            DEBUG("Could not get window for client message\n");
+            DEBUG("Could not get window for client message");
             return;
         }
 
         GWMContainer* ws = container_get_workspace(con);
         if (ws == NULL) {
-            DEBUG("Window is not being managed, ignoring _NET_ACTIVE_WINDOW\n");
+            DEBUG("Window is not being managed, ignoring _NET_ACTIVE_WINDOW");
             return;
         }
 
         if (container_is_internal(ws) && ws != workspace_get("__gwm_scratch")) {
-            DEBUG("Workspace is internal but not scratchpad, ignoring _NET_ACTIVE_WINDOW\n");
+            DEBUG("Workspace is internal but not scratchpad, ignoring _NET_ACTIVE_WINDOW");
             return;
         }
 
@@ -1213,7 +1213,7 @@ static void handle_client_message(xcb_client_message_event_t *event)
         if (event->data.data32[0] == 2) {
             /* Always focus the con if it is from a pager, because this is most
              * likely from some user action */
-            DEBUG("This request came from a pager. Focusing con = %p\n", con);
+            DEBUG("This request came from a pager. Focusing con = %p", con);
 
             if (container_is_internal(ws)) {
                 scratchpad_show(con);
@@ -1226,7 +1226,7 @@ static void handle_client_message(xcb_client_message_event_t *event)
         }
         else {
             if (container_is_internal(ws)) {
-                DEBUG("Ignoring request to make con = %p active because it's on an internal workspace.\n", con);
+                DEBUG("Ignoring request to make con = %p active because it's on an internal workspace.", con);
                 return;
             }
 
@@ -1235,7 +1235,7 @@ static void handle_client_message(xcb_client_message_event_t *event)
                 container_activate_unblock(con);
             }
             else if (gConfig.focusOnWindowActivation == FOWA_URGENT || (gConfig.focusOnWindowActivation == FOWA_SMART && !workspace_is_visible(ws))) {
-                DEBUG("Marking con = %p urgent\n", con);
+                DEBUG("Marking con = %p urgent", con);
                 container_set_urgency(con, true);
                 con = manage_remanage_window(con);
             }
@@ -1250,7 +1250,7 @@ static void handle_client_message(xcb_client_message_event_t *event)
         sync_respond(window, rnd);
     }
     else if (event->type == A__NET_REQUEST_FRAME_EXTENTS) {
-        DEBUG("_NET_REQUEST_FRAME_EXTENTS for window 0x%08x\n", event->window);
+        DEBUG("_NET_REQUEST_FRAME_EXTENTS for window 0x%08x", event->window);
 
         GWMRect r = {
             gConfig.defaultBorderWidth, /* left */
@@ -1269,7 +1269,7 @@ static void handle_client_message(xcb_client_message_event_t *event)
     }
     else if (event->type == A_WM_CHANGE_STATE) {
         if (event->data.data32[0] == XCB_ICCCM_WM_STATE_ICONIC) {
-            DEBUG("Client has requested iconic state, rejecting. (window = %08x)\n", event->window);
+            DEBUG("Client has requested iconic state, rejecting. (window = %08x)", event->window);
             long data[] = {XCB_ICCCM_WM_STATE_NORMAL, XCB_NONE};
             xcb_change_property(gConn, XCB_PROP_MODE_REPLACE, event->window, A_WM_STATE, A_WM_STATE, 32, 2, data);
         }
@@ -1277,28 +1277,28 @@ static void handle_client_message(xcb_client_message_event_t *event)
             DEBUG("Not handling WM_CHANGE_STATE request. (window = %08x, state = %d)", event->window, event->data.data32[0]);
         }
     } else if (event->type == A__NET_CURRENT_DESKTOP) {
-        DEBUG("Request to change current desktop to index %d\n", event->data.data32[0]);
+        DEBUG("Request to change current desktop to index %d", event->data.data32[0]);
         GWMContainer* ws = extend_wm_hint_get_workspace_by_index(event->data.data32[0]);
         if (ws == NULL) {
             ERROR("Could not determine workspace for this index, ignoring request.");
             return;
         }
 
-        DEBUG("Handling request to focus workspace %s\n", ws->name);
+        DEBUG("Handling request to focus workspace %s", ws->name);
         workspace_show(ws);
         tree_render();
     } else if (event->type == A__NET_WM_DESKTOP) {
         uint32_t index = event->data.data32[0];
-        DEBUG("Request to move window %d to EWMH desktop index %d\n", event->window, index);
+        DEBUG("Request to move window %d to EWMH desktop index %d", event->window, index);
 
         GWMContainer* con = container_by_window_id(event->window);
         if (con == NULL) {
-            DEBUG("Couldn't find con for window %d, ignoring the request.\n", event->window);
+            DEBUG("Couldn't find con for window %d, ignoring the request.", event->window);
             return;
         }
 
         if (index == NET_WM_DESKTOP_ALL) {
-            DEBUG("The window was requested to be visible on all workspaces, making it sticky and floating.\n");
+            DEBUG("The window was requested to be visible on all workspaces, making it sticky and floating.");
 
             if (floating_enable(con, false)) {
                 con->floating = FLOATING_AUTO_ON;
@@ -1311,7 +1311,7 @@ static void handle_client_message(xcb_client_message_event_t *event)
         else {
             GWMContainer* ws = extend_wm_hint_get_workspace_by_index(index);
             if (ws == NULL) {
-                ERROR("Could not determine workspace for this index, ignoring request.\n");
+                ERROR("Could not determine workspace for this index, ignoring request.");
                 return;
             }
             container_move_to_workspace(con, ws, true, false, false);
@@ -1323,7 +1323,7 @@ static void handle_client_message(xcb_client_message_event_t *event)
     else if (event->type == A__NET_CLOSE_WINDOW) {
         GWMContainer* con = container_by_window_id(event->window);
         if (con) {
-            DEBUG("Handling _NET_CLOSE_WINDOW request (con = %p)\n", con);
+            DEBUG("Handling _NET_CLOSE_WINDOW request (con = %p)", con);
             if (event->data.data32[0]) {
                 gLastTimestamp = event->data.data32[0];
             }
@@ -1331,16 +1331,16 @@ static void handle_client_message(xcb_client_message_event_t *event)
             tree_render();
         }
         else {
-            DEBUG("Couldn't find con for _NET_CLOSE_WINDOW request. (window = %08x)\n", event->window);
+            DEBUG("Couldn't find con for _NET_CLOSE_WINDOW request. (window = %08x)", event->window);
         }
     }
     else if (event->type == A__NET_WM_MOVERESIZE) {
         GWMContainer* con = container_by_window_id(event->window);
         if (!con || !container_is_floating(con)) {
-            DEBUG("Couldn't find con for _NET_WM_MOVERESIZE request, or con not floating (window = %08x)\n", event->window);
+            DEBUG("Couldn't find con for _NET_WM_MOVERESIZE request, or con not floating (window = %08x)", event->window);
             return;
         }
-        DEBUG("Handling _NET_WM_MOVERESIZE request (con = %p)\n", con);
+        DEBUG("Handling _NET_WM_MOVERESIZE request (con = %p)", con);
         uint32_t direction = event->data.data32[2];
         uint32_t x_root = event->data.data32[0];
         uint32_t y_root = event->data.data32[1];
@@ -1358,11 +1358,11 @@ static void handle_client_message(xcb_client_message_event_t *event)
                 floating_resize_window(con->parent, false, &fake);
                 break;
             default:
-                DEBUG("_NET_WM_MOVERESIZE direction %d not implemented\n", direction);
+                DEBUG("_NET_WM_MOVERESIZE direction %d not implemented", direction);
                 break;
         }
     } else if (event->type == A__NET_MOVERESIZE_WINDOW) {
-        DEBUG("Received _NET_MOVE_RESIZE_WINDOW. Handling by faking a configure request.\n");
+        DEBUG("Received _NET_MOVE_RESIZE_WINDOW. Handling by faking a configure request.");
 
         void *_generated_event = calloc(32, 1);
         xcb_configure_request_event_t *generated_event = _generated_event;
@@ -1391,23 +1391,23 @@ static void handle_client_message(xcb_client_message_event_t *event)
         handle_configure_request(generated_event);
         FREE(generated_event);
     } else {
-        DEBUG("Skipping client message for unhandled type %d\n", event->type);
+        DEBUG("Skipping client message for unhandled type %d", event->type);
     }
 }
 
 static void handle_screen_change(xcb_generic_event_t *e)
 {
-    DEBUG("RandR screen change\n");
+    DEBUG("RandR screen change");
 
     /* The geometry of the root window is used for “fullscreen global” and
      * changes when new outputs are added. */
     xcb_get_geometry_cookie_t cookie = xcb_get_geometry(gConn, gRoot);
     xcb_get_geometry_reply_t *reply = xcb_get_geometry_reply(gConn, cookie, NULL);
     if (reply == NULL) {
-        ERROR("Could not get geometry of the root window, exiting\n");
+        ERROR("Could not get geometry of the root window, exiting");
         exit(EXIT_FAILURE);
     }
-    DEBUG("root geometry reply: (%d, %d) %d x %d\n", reply->x, reply->y, reply->width, reply->height);
+    DEBUG("root geometry reply: (%d, %d) %d x %d", reply->x, reply->y, reply->width, reply->height);
 
     gContainerRoot->rect.width = reply->width;
     gContainerRoot->rect.height = reply->height;
@@ -1426,7 +1426,7 @@ static void handle_configure_request(xcb_configure_request_event_t *event)
     DEBUG("window 0x%08x wants to be at %dx%d with %dx%d", event->window, event->x, event->y, event->width, event->height);
 
     if ((con = container_by_window_id(event->window)) == NULL) {
-        DEBUG("Configure request for unmanaged window, can do that.\n");
+        DEBUG("Configure request for unmanaged window, can do that.");
 
         uint32_t mask = 0;
         uint32_t values[7];
@@ -1456,7 +1456,7 @@ static void handle_configure_request(xcb_configure_request_event_t *event)
 
     GWMContainer* workspace = container_get_workspace(con);
     if (workspace && (strcmp(workspace->name, "__gwm_scratch") == 0)) {
-        DEBUG("This is a scratchpad container, ignoring ConfigureRequest\n");
+        DEBUG("This is a scratchpad container, ignoring ConfigureRequest");
         goto out;
     }
     GWMContainer* fullscreen = container_get_full_screen_covering_ws(workspace);
@@ -1468,33 +1468,33 @@ static void handle_configure_request(xcb_configure_request_event_t *event)
 
         if (event->value_mask & XCB_CONFIG_WINDOW_X) {
             newrect.x = event->x + (-1) * bsr.x;
-            DEBUG("proposed x = %d, new x is %d\n", event->x, newrect.x);
+            DEBUG("proposed x = %d, new x is %d", event->x, newrect.x);
         }
         if (event->value_mask & XCB_CONFIG_WINDOW_Y) {
             newrect.y = event->y + (-1) * bsr.y;
-            DEBUG("proposed y = %d, new y is %d\n", event->y, newrect.y);
+            DEBUG("proposed y = %d, new y is %d", event->y, newrect.y);
         }
         if (event->value_mask & XCB_CONFIG_WINDOW_WIDTH) {
             newrect.width = event->width + (-1) * bsr.width;
             newrect.width += con->borderWidth * 2;
-            DEBUG("proposed width = %d, new width is %d (x11 border %d)\n", event->width, newrect.width, con->borderWidth);
+            DEBUG("proposed width = %d, new width is %d (x11 border %d)", event->width, newrect.width, con->borderWidth);
         }
         if (event->value_mask & XCB_CONFIG_WINDOW_HEIGHT) {
             newrect.height = event->height + (-1) * bsr.height;
             newrect.height += con->borderWidth * 2;
-            DEBUG("proposed height = %d, new height is %d (x11 border %d)\n", event->height, newrect.height, con->borderWidth);
+            DEBUG("proposed height = %d, new height is %d (x11 border %d)", event->height, newrect.height, con->borderWidth);
         }
 
-        DEBUG("Container is a floating leaf node, will do that.\n");
+        DEBUG("Container is a floating leaf node, will do that.");
         floating_reposition(floatingcon, newrect);
         return;
     }
 
     /* Dock windows can be reconfigured in their height and moved to another output. */
     if (con->parent && con->parent->type == CT_DOCK_AREA) {
-        DEBUG("Reconfiguring dock window (con = %p).\n", con);
+        DEBUG("Reconfiguring dock window (con = %p).", con);
         if (event->value_mask & XCB_CONFIG_WINDOW_HEIGHT) {
-            DEBUG("Dock client wants to change height to %d, we can do that.\n", event->height);
+            DEBUG("Dock client wants to change height to %d, we can do that.", event->height);
 
             con->geoRect.height = event->height;
             tree_render();
@@ -1507,7 +1507,7 @@ static void handle_configure_request(xcb_configure_request_event_t *event)
             GWMContainer* current_output = container_get_output(con);
             GWMOutput *target = randr_get_output_containing(x, y);
             if (target != NULL && current_output != target->container) {
-                DEBUG("Dock client is requested to be moved to output %s, moving it there.\n", output_primary_name(target));
+                DEBUG("Dock client is requested to be moved to output %s, moving it there.", output_primary_name(target));
                 GWMMatch *match;
                 GWMContainer* nc = container_for_window(target->container, con->window, &match);
                 DEBUG("Dock client will be moved to container %p.", nc);
@@ -1516,43 +1516,43 @@ static void handle_configure_request(xcb_configure_request_event_t *event)
                 tree_render();
             }
             else {
-                DEBUG("Dock client will not be moved, we only support moving it to another output.\n");
+                DEBUG("Dock client will not be moved, we only support moving it to another output.");
             }
         }
         goto out;
     }
 
     if (event->value_mask & XCB_CONFIG_WINDOW_STACK_MODE) {
-        DEBUG("window 0x%08x wants to be stacked %d\n", event->window, event->stack_mode);
+        DEBUG("window 0x%08x wants to be stacked %d", event->window, event->stack_mode);
         if (event->stack_mode != XCB_STACK_MODE_ABOVE) {
-            DEBUG("stack_mode != XCB_STACK_MODE_ABOVE, ignoring ConfigureRequest\n");
+            DEBUG("stack_mode != XCB_STACK_MODE_ABOVE, ignoring ConfigureRequest");
             goto out;
         }
 
         if (fullscreen || !container_is_leaf(con)) {
-            DEBUG("fullscreen or not a leaf, ignoring ConfigureRequest\n");
+            DEBUG("fullscreen or not a leaf, ignoring ConfigureRequest");
             goto out;
         }
 
         if (workspace == NULL) {
-            DEBUG("Window is not being managed, ignoring ConfigureRequest\n");
+            DEBUG("Window is not being managed, ignoring ConfigureRequest");
             goto out;
         }
 
         if (gConfig.focusOnWindowActivation == FOWA_FOCUS || (gConfig.focusOnWindowActivation == FOWA_SMART && workspace_is_visible(workspace))) {
-            DEBUG("Focusing con = %p\n", con);
+            DEBUG("Focusing con = %p", con);
             workspace_show(workspace);
             container_activate_unblock(con);
             tree_render();
         }
         else if (gConfig.focusOnWindowActivation == FOWA_URGENT || (gConfig.focusOnWindowActivation == FOWA_SMART && !workspace_is_visible(workspace))) {
-            DEBUG("Marking con = %p urgent\n", con);
+            DEBUG("Marking con = %p urgent", con);
             container_set_urgency(con, true);
             con = manage_remanage_window(con);
             tree_render();
         }
         else {
-            DEBUG("Ignoring request for con = %p.\n", con);
+            DEBUG("Ignoring request for con = %p.", con);
         }
     }
 
@@ -1566,7 +1566,7 @@ static void handle_mapping_notify(xcb_mapping_notify_event_t *event)
         return;
     }
 
-    DEBUG("Received mapping_notify for keyboard or modifier mapping, re-grabbing keys\n");
+    DEBUG("Received mapping_notify for keyboard or modifier mapping, re-grabbing keys");
     xcb_refresh_keyboard_mapping(gKeySyms, event);
 
     gXCBNumLockMask = util_aio_get_mod_mask_for(XCB_NUM_LOCK, gKeySyms);
@@ -1578,10 +1578,10 @@ static void handle_mapping_notify(xcb_mapping_notify_event_t *event)
 
 static void handle_focus_in(xcb_focus_in_event_t *event)
 {
-    DEBUG("focus change in, for window 0x%08x\n", event->event);
+    DEBUG("focus change in, for window 0x%08x", event->event);
 
     if (event->event == gRoot) {
-        DEBUG("Received focus in for root window, refocusing the focused window.\n");
+        DEBUG("Received focus in for root window, refocusing the focused window.");
         container_focus(gFocused);
         gFocusedID = XCB_NONE;
         x_push_changes(gContainerRoot);
@@ -1591,30 +1591,30 @@ static void handle_focus_in(xcb_focus_in_event_t *event)
     if ((con = container_by_window_id(event->event)) == NULL || con->window == NULL) {
         return;
     }
-    DEBUG("That is con %p / %s\n", con, con->name);
+    DEBUG("That is con %p / %s", con, con->name);
 
     if (event->mode == XCB_NOTIFY_MODE_GRAB || event->mode == XCB_NOTIFY_MODE_UNGRAB) {
-        DEBUG("FocusIn event for grab/ungrab, ignoring\n");
+        DEBUG("FocusIn event for grab/ungrab, ignoring");
         return;
     }
 
     if (event->detail == XCB_NOTIFY_DETAIL_POINTER) {
-        DEBUG("notify detail is pointer, ignoring this event\n");
+        DEBUG("notify detail is pointer, ignoring this event");
         return;
     }
 
     if (gFocusedID == event->event && !container_inside_floating(con)) {
-        DEBUG("focus matches the currently focused window, not doing anything\n");
+        DEBUG("focus matches the currently focused window, not doing anything");
         return;
     }
 
     /* Skip dock clients, they cannot get the i3 focus. */
     if (con->parent->type == CT_DOCK_AREA) {
-        DEBUG("This is a dock client, not focusing.\n");
+        DEBUG("This is a dock client, not focusing.");
         return;
     }
 
-    DEBUG("focus is different / refocusing floating window: updating decorations\n");
+    DEBUG("focus is different / refocusing floating window: updating decorations");
 
     container_activate_unblock(con);
 
@@ -1686,16 +1686,16 @@ static void handle_focus_out(xcb_focus_in_event_t *event)
             break;
     }
 
-    DEBUG("focus change out: window 0x%08x (con %p, %s) lost focus with detail=%s, mode=%s\n", event->event, con, window_name, detail, mode);
+    DEBUG("focus change out: window 0x%08x (con %p, %s) lost focus with detail=%s, mode=%s", event->event, con, window_name, detail, mode);
 }
 
 static void handle_configure_notify(xcb_configure_notify_event_t *event)
 {
     if (event->event != gRoot) {
-        DEBUG("ConfigureNotify for non-root window 0x%08x, ignoring\n", event->event);
+        DEBUG("ConfigureNotify for non-root window 0x%08x, ignoring", event->event);
         return;
     }
-    DEBUG("ConfigureNotify for root window 0x%08x\n", event->event);
+    DEBUG("ConfigureNotify for root window 0x%08x", event->event);
 
 //    if (gForceXinerama) {
         return;
@@ -1721,12 +1721,12 @@ static void property_notify(uint8_t state, xcb_window_t window, xcb_atom_t atom)
     }
 
     if (handler == NULL) {
-        /* DEBUG("Unhandled property notify for atom %d (0x%08x)\n", atom, atom); */
+        /* DEBUG("Unhandled property notify for atom %d (0x%08x)", atom, atom); */
         return;
     }
 
     if ((con = container_by_window_id(window)) == NULL || con->window == NULL) {
-        DEBUG("Received property for atom %d for unknown client\n", atom);
+        DEBUG("Received property for atom %d for unknown client", atom);
         return;
     }
 
@@ -1734,7 +1734,7 @@ static void property_notify(uint8_t state, xcb_window_t window, xcb_atom_t atom)
         xcb_get_property_cookie_t cookie = xcb_get_property(gConn, 0, window, atom, XCB_GET_PROPERTY_TYPE_ANY, 0, handler->longLen);
         propr = xcb_get_property_reply(gConn, cookie, &err);
         if (err != NULL) {
-            DEBUG("got error %d when getting property of atom %d\n", err->error_code, atom);
+            DEBUG("got error %d when getting property of atom %d", err->error_code, atom);
             FREE(err);
             return;
         }
@@ -1748,7 +1748,7 @@ static void property_notify(uint8_t state, xcb_window_t window, xcb_atom_t atom)
 static void handle_selection_clear(xcb_selection_clear_event_t *event)
 {
     if (event->selection != gWMSn) {
-        DEBUG("SelectionClear for unknown selection %d, ignoring\n", event->selection);
+        DEBUG("SelectionClear for unknown selection %d, ignoring", event->selection);
         return;
     }
     DEBUG("Lost WM_Sn selection, exiting.");

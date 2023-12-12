@@ -447,7 +447,7 @@ int *key_binding_get_buttons_to_grab(void)
 
         long button;
         if (!util_parse_long(bind->symbol + (sizeof("button") - 1), &button, 10)) {
-            ERROR("Could not parse button number, skipping this binding. Please report this bug in i3.\n");
+            ERROR("Could not parse button number, skipping this binding. Please report this bug in i3.");
             continue;
         }
 

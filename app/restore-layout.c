@@ -193,14 +193,14 @@ static void expose_event(xcb_expose_event_t *event)
             continue;
         }
 
-        DEBUG("refreshing window 0x%08x contents (con %p)\n", state->window, state->con);
+        DEBUG("refreshing window 0x%08x contents (con %p)", state->window, state->con);
 
         update_placeholder_contents(state);
 
         return;
     }
 
-    ERROR("Received ExposeEvent for unknown window 0x%08x\n", event->window);
+    ERROR("Received ExposeEvent for unknown window 0x%08x", event->window);
 }
 
 static void update_placeholder_contents(GWMPlaceholderState* state)

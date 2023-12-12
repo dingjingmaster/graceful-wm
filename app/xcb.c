@@ -66,7 +66,7 @@ void xcb_gwm_fake_absolute_configure_notify(GWMContainer *con)
     absolute.width = con->windowRect.width;
     absolute.height = con->windowRect.height;
 
-    DEBUG("fake rect = (%d, %d, %d, %d)\n", absolute.x, absolute.y, absolute.width, absolute.height);
+    DEBUG("fake rect = (%d, %d, %d, %d)", absolute.x, absolute.y, absolute.width, absolute.height);
 
     xcb_gwm_fake_configure_notify(gConn, absolute, con->window->id, con->borderWidth);
 }

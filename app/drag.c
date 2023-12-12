@@ -200,7 +200,7 @@ DRAGGING_CB(drag_callback) {
         direction = D_DOWN;
     } else {
         /* Keep the compiler happy */
-        ERROR("min() is broken\n");
+        ERROR("min() is broken");
         g_assert(false);
     }
     const bool target_parent = (d_min < parent_indicator_size && con_on_side_of_parent(target, direction));
@@ -255,7 +255,7 @@ create_indicator:
 
 void tiling_drag(GWMContainer *con, xcb_button_press_event_t *event, bool useThreshold)
 {
-    DEBUG("Start dragging tiled container: con = %p\n", con);
+    DEBUG("Start dragging tiled container: con = %p", con);
     bool set_focus = (con == gFocused);
     bool set_fs = con->fullScreenMode != CF_NONE;
 
@@ -279,7 +279,7 @@ void tiling_drag(GWMContainer *con, xcb_button_press_event_t *event, bool useThr
         || target == NULL
         || (target == con && drop_type != DT_PARENT)
         || !container_exists(target)) {
-        DEBUG("drop aborted\n");
+        DEBUG("drop aborted");
         return;
     }
 
@@ -290,11 +290,11 @@ void tiling_drag(GWMContainer *con, xcb_button_press_event_t *event, bool useThr
     switch (drop_type) {
         case DT_CENTER:
             /* Also handles workspaces.*/
-            DEBUG("drop to center of %p\n", target);
+            DEBUG("drop to center of %p", target);
             container_move_to_target(con, target);
             break;
         case DT_SIBLING:
-            DEBUG("drop %s %p\n", util_position_to_string(position), target);
+            DEBUG("drop %s %p", util_position_to_string(position), target);
             if (container_orientation(target->parent) != orientation) {
                 /* If con and target are the only children of the same parent, we can just change
                  * the parent's layout manually and then move con to the correct position.
@@ -314,7 +314,7 @@ void tiling_drag(GWMContainer *con, xcb_button_press_event_t *event, bool useThr
             break;
         case DT_PARENT: {
             const bool parent_tabbed_or_stacked = (target->parent->layout == L_TABBED || target->parent->layout == L_STACKED);
-            DEBUG("drop %s (%s) of %s%p\n",
+            DEBUG("drop %s (%s) of %s%p",
                     util_direction_to_string(direction),
                     util_position_to_string(position),
                     parent_tabbed_or_stacked ? "tabbed/stacked " : "",
@@ -349,7 +349,7 @@ void tiling_drag(GWMContainer *con, xcb_button_press_event_t *event, bool useThr
     if (set_focus || set_fs) {
         GWMContainer* fs = container_get_full_screen_covering_ws(container_get_workspace(con));
         if (fs == con) {
-            ERROR("dragged container somehow got fullscreen again.\n");
+            ERROR("dragged container somehow got fullscreen again.");
             g_assert(false);
         }
         else if (fs && set_focus && set_fs) {

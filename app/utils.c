@@ -148,7 +148,7 @@ ssize_t util_slurp(const char *path, char **buf)
     size_t n = fread(*buf, 1, stbuf.st_size, f);
     fclose(f);
     if ((ssize_t)n != stbuf.st_size) {
-        ERROR("File \"%s\" could not be read entirely: got %zd, want %" PRIi64 "\n", path, n, (int64_t)stbuf.st_size);
+        ERROR("File \"%s\" could not be read entirely: got %zd, want %" PRIi64 "", path, n, (int64_t)stbuf.st_size);
         {
             g_free (*buf);
             *buf = NULL;

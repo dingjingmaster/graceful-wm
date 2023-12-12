@@ -10,7 +10,7 @@
 
 void sync_respond(xcb_window_t window, uint32_t rnd)
 {
-    DEBUG("[gwm sync protocol] Sending random value %d back to X11 window 0x%08x\n", rnd, window);
+    DEBUG("[gwm sync protocol] Sending random value %d back to X11 window 0x%08x", rnd, window);
 
     void *reply = calloc(32, 1);
     xcb_client_message_event_t *ev = reply;

@@ -22,7 +22,7 @@ DRAGGING_CB(resizeCallback)
 {
     const struct CallbackParams* params = extra;
     GWMContainer* output = params->output;
-    DEBUG("new x = %d, y = %d\n", new_x, new_y);
+    DEBUG("new x = %d, y = %d", new_x, new_y);
 
     if (!*params->thresholdExceeded) {
         xcb_map_window(gConn, params->helpwin);

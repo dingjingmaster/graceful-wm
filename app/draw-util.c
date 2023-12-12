@@ -429,7 +429,7 @@ static int xcb_query_text_width(const xcb_char2b_t* text, size_t textLen)
     /* Make the user know we’re using the slow path, but only once. */
     static bool first_invocation = true;
     if (first_invocation) {
-        fprintf(stderr, "Using slow code path for text extents\n");
+        fprintf(stderr, "Using slow code path for text extents");
         first_invocation = false;
     }
 
@@ -440,7 +440,7 @@ static int xcb_query_text_width(const xcb_char2b_t* text, size_t textLen)
     if (reply == NULL) {
         /* We return a safe estimate because a rendering error is better than
          * a crash. Plus, the user will see the error in their log. */
-        fprintf(stderr, "Could not get text extents (X error code %d)\n",
+        fprintf(stderr, "Could not get text extents (X error code %d)",
                 error->error_code);
         free(error);
         return gsSavedFont->specific.xcb.info->max_bounds.character_width * textLen;

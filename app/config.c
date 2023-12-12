@@ -145,7 +145,7 @@ bool config_load_configuration(const char *overrideConfigfile)
     key_binding_reorder_bindings();
 
 //    if (gConfig.font.type == FONT_TYPE_NONE) {
-//        ELOG("You did not specify required configuration option \"font\"\n");
+//        ELOG("You did not specify required configuration option \"font\"");
 //        config.font = load_font("fixed", true);
 //        set_font(&config.font);
 //    }

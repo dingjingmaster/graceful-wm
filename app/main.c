@@ -206,8 +206,8 @@ int main(int argc, char* argv[])
 
     dpi_init();
 
-    DEBUG(_("\nroot_depth = %d, visual_id = 0x%08x.\n"
-            "root_screen->height_in_pixels = %d, root_screen->height_in_millimeters = %d\n"
+    DEBUG(_("\nroot_depth = %d, visual_id = 0x%08x."
+            "root_screen->height_in_pixels = %d, root_screen->height_in_millimeters = %d"
             "One logical pixel corresponds to %d physical pixel on this display."),
             gRootDepth, gVisualType->visual_id,
             gRootScreen->height_in_pixels, gRootScreen->height_in_millimeters,
@@ -550,7 +550,7 @@ static void xcb_prepare_cb(EV_P_ ev_prepare *w, int revents)
     while ((event = xcb_poll_for_event(gConn)) != NULL) {
         if (event->response_type == 0) {
             if (handler_event_is_ignored(event->sequence, 0)) {
-                DEBUG("Expected X11 Error received for sequence %x\n", event->sequence);
+                DEBUG("Expected X11 Error received for sequence %x", event->sequence);
             }
             else {
                 xcb_generic_error_t *error = (xcb_generic_error_t *)event;

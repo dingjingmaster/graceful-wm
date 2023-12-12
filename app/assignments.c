@@ -11,7 +11,7 @@
 
 void assignments_run(GWMWindow *window)
 {
-    DEBUG("Checking if any assignments match this window\n");
+    DEBUG("Checking if any assignments match this window");
 
     bool needs_tree_render = false;
 
@@ -27,7 +27,7 @@ void assignments_run(GWMWindow *window)
                 continue;
             }
 
-            DEBUG("This assignment already ran for the given window, not executing it again.\n");
+            DEBUG("This assignment already ran for the given window, not executing it again.");
             skip = true;
             break;
         }
@@ -40,7 +40,7 @@ void assignments_run(GWMWindow *window)
         window->ranAssignments = realloc(window->ranAssignments, sizeof(GWMAssignment*) * window->nrAssignments);
         window->ranAssignments[window->nrAssignments - 1] = current;
 
-        DEBUG("matching assignment, execute command %s\n", current->destination.command);
+        DEBUG("matching assignment, execute command %s", current->destination.command);
         char *full_command = g_strdup_printf("[id=\"%d\"] %s", window->id, current->destination.command);
         GWMCommandResult *result = cmd_parse_command(full_command, NULL, NULL);
         free(full_command);
@@ -66,7 +66,7 @@ GWMAssignment *assignment_for(GWMWindow *window, int type)
         if ((type != A_ANY && (assignment->type & type) == 0) || !match_matches_window(&(assignment->match), window)) {
             continue;
         }
-        DEBUG("got a matching assignment\n");
+        DEBUG("got a matching assignment");
         return assignment;
     }
 

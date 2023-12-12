@@ -200,7 +200,7 @@ void manage_window(xcb_window_t window, xcb_get_window_attributes_cookie_t cooki
     }
     FREE(wm_desktop_reply);
 
-    cwindow->needTakeFocus = window_supports_protocol(cwindow->id, A_WM_TAKE_FOCUS);
+    cwindow->needTakeFocus = x_window_supports_protocol(cwindow->id, A_WM_TAKE_FOCUS);
     cwindow->windowType = xcb_gwm_get_preferred_window_type(type_reply);
 
     GWMContainer* search_at = gContainerRoot;

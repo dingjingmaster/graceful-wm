@@ -69,14 +69,14 @@ void move_tree_move(GWMContainer *con, GWMDirection direction)
             GWMContainer* swap = (direction == D_LEFT || direction == D_UP) ? TAILQ_PREV(con, nodesHead, nodes) : TAILQ_NEXT(con, nodes);
             if (swap) {
                 if (!container_is_leaf(swap)) {
-                    DEBUG("Moving into our bordering branch\n");
+                    DEBUG("Moving into our bordering branch");
                     target = container_descend_direction(swap, direction);
                     position = (container_orientation(target->parent) != o || direction == D_UP || direction == D_LEFT ? AFTER : BEFORE);
                     move_insert_con_into(con, target, position);
                     goto end;
                 }
 
-                DEBUG("Swapping with sibling.\n");
+                DEBUG("Swapping with sibling.");
                 if (direction == D_LEFT || direction == D_UP) {
                     TAILQ_SWAP(swap, con, &(swap->parent->nodesHead), nodes);
                 }
@@ -121,7 +121,7 @@ void move_tree_move(GWMContainer *con, GWMDirection direction)
     GWMContainer* next = (direction == D_UP || direction == D_LEFT ? TAILQ_PREV(above, nodesHead, nodes) : TAILQ_NEXT(above, nodes));
 
     if (next && !container_is_leaf(next)) {
-        DEBUG("Moving into the bordering branch of our adjacent container\n");
+        DEBUG("Moving into the bordering branch of our adjacent container");
         target = container_descend_direction(next, direction);
         position = (container_orientation(target->parent) != o || direction == D_UP || direction == D_LEFT ? AFTER : BEFORE);
         move_insert_con_into(con, target, position);
@@ -130,11 +130,11 @@ void move_tree_move(GWMContainer *con, GWMDirection direction)
         /* Con is the lone child of a non-default layout container at the edge
          * of the workspace. Treat it as though the workspace is its parent
          * and move it to the next output. */
-        DEBUG("Grandparent is workspace\n");
+        DEBUG("Grandparent is workspace");
         move_to_output_directed(con, direction);
         return;
     } else {
-        DEBUG("Moving into container above\n");
+        DEBUG("Moving into container above");
         position = (direction == D_UP || direction == D_LEFT ? BEFORE : AFTER);
         move_insert_con_into(con, above, position);
     }
@@ -285,7 +285,7 @@ static void move_to_output_directed(GWMContainer* con, GWMDirection direction)
     GWMOutput *output = randr_get_output_next(direction, current_output, CLOSEST_OUTPUT);
 
     if (!output) {
-        DEBUG("No output in this direction found. Not moving.\n");
+        DEBUG("No output in this direction found. Not moving.");
         return;
     }
 
@@ -293,7 +293,7 @@ static void move_to_output_directed(GWMContainer* con, GWMDirection direction)
     GREP_FIRST(ws, output_get_content(output->container), workspace_is_visible(child));
 
     if (!ws) {
-        DEBUG("No workspace on output in this direction found. Not moving.\n");
+        DEBUG("No workspace on output in this direction found. Not moving.");
         return;
     }
 

@@ -49,7 +49,7 @@ void match_copy(GWMMatch *dest, GWMMatch *src)
 
 bool match_matches_window(GWMMatch *match, GWMWindow *window)
 {
-    INFO("Checking window 0x%08x (class %s)\n", window->id, window->classClass);
+    INFO("Checking window 0x%08x (class %s)", window->id, window->classClass);
 
 #define GET_FIELD_str(field) (field)
 #define GET_FIELD_gwm_string(field) ((field))
@@ -62,10 +62,10 @@ bool match_matches_window(GWMMatch *match, GWMWindow *window)
             if (strcmp(match->match_field->pattern, "__focused__") == 0 &&                        \
                 gFocused && gFocused->window && gFocused->window->window_field &&                 \
                 strcmp(window_field_str, GET_FIELD_##type(gFocused->window->window_field)) == 0) {\
-                INFO("window " #match_field " matches focused window\n");                         \
+                INFO("window " #match_field " matches focused window");                         \
             }                                                                                     \
             else if (regex_matches(match->match_field, window_field_str)) {                       \
-                INFO("window " #match_field " matches (%s)\n", window_field_str);                 \
+                INFO("window " #match_field " matches (%s)", window_field_str);                 \
             }                                                                                     \
             else {                                                                                \
                 return false;                                                                     \
@@ -78,9 +78,9 @@ bool match_matches_window(GWMMatch *match, GWMWindow *window)
 
     if (match->id != XCB_NONE) {
         if (window->id == match->id) {
-            INFO("match made by window id (%d)\n", window->id);
+            INFO("match made by window id (%d)", window->id);
         } else {
-            INFO("window id does not match\n");
+            INFO("window id does not match");
             return false;
         }
     }
@@ -90,7 +90,7 @@ bool match_matches_window(GWMMatch *match, GWMWindow *window)
 
     if (match->windowType != UINT32_MAX) {
         if (window->windowType == match->windowType) {
-            INFO("window_type matches (%i)\n", match->windowType);
+            INFO("window_type matches (%i)", match->windowType);
         }
         else {
             return false;
@@ -141,10 +141,10 @@ bool match_matches_window(GWMMatch *match, GWMWindow *window)
 
         if (strcmp(match->workspace->pattern, "__focused__") == 0 &&
             strcmp(ws->name, container_get_workspace(gFocused)->name) == 0) {
-            INFO("workspace matches focused workspace\n");
+            INFO("workspace matches focused workspace");
         }
         else if (regex_matches(match->workspace, ws->name)) {
-            INFO("workspace matches (%s)\n", ws->name);
+            INFO("workspace matches (%s)", ws->name);
         }
         else {
             return false;
@@ -157,10 +157,10 @@ bool match_matches_window(GWMMatch *match, GWMWindow *window)
             ((window->dock == W_DOCK_TOP || window->dock == W_DOCK_BOTTOM) &&
              match->dock == M_DOCK_ANY) ||
             (window->dock == W_NO_DOCK && match->dock == M_NO_DOCK)) {
-            INFO("dock status matches\n");
+            INFO("dock status matches");
         }
         else {
-            INFO("dock status does not match\n");
+            INFO("dock status does not match");
             return false;
         }
     }
@@ -179,10 +179,10 @@ bool match_matches_window(GWMMatch *match, GWMWindow *window)
         }
 
         if (matched) {
-            INFO("mark matches\n");
+            INFO("mark matches");
         }
         else {
-            INFO("mark does not match\n");
+            INFO("mark does not match");
             return false;
         }
     }
@@ -253,7 +253,7 @@ void match_free(GWMMatch *match)
 void match_parse_property(GWMMatch *match, const char *cType, const char *cValue)
 {
     g_assert(match != NULL);
-    DEBUG("cType=*%s*, cValue=*%s*\n", cType, cValue);
+    DEBUG("cType=*%s*, cValue=*%s*", cType, cValue);
 
     if (strcmp(cType, "class") == 0) {
         regex_free(match->class);
@@ -281,11 +281,11 @@ void match_parse_property(GWMMatch *match, const char *cType, const char *cValue
 
         long parsed;
         if (!util_parse_long(cValue, &parsed, 0)) {
-            ERROR("Could not parse con id \"%s\"\n", cValue);
+            ERROR("Could not parse con id \"%s\"", cValue);
             match->error = g_strdup("invalid con_id");
         } else {
             match->containerID = (GWMContainer*)parsed;
-            DEBUG("id as int = %p\n", match->containerID);
+            DEBUG("id as int = %p", match->containerID);
         }
         return;
     }
@@ -293,12 +293,12 @@ void match_parse_property(GWMMatch *match, const char *cType, const char *cValue
     if (strcmp(cType, "id") == 0) {
         long parsed;
         if (!util_parse_long(cValue, &parsed, 0)) {
-            ERROR("Could not parse window id \"%s\"\n", cValue);
+            ERROR("Could not parse window id \"%s\"", cValue);
             match->error = g_strdup("invalid id");
         }
         else {
             match->id = parsed;
-            DEBUG("window id as int = %d\n", match->id);
+            DEBUG("window id as int = %d", match->id);
         }
         return;
     }
@@ -326,7 +326,7 @@ void match_parse_property(GWMMatch *match, const char *cType, const char *cValue
             match->windowType = A__NET_WM_WINDOW_TYPE_NOTIFICATION;
         }
         else {
-            ERROR("unknown window_type value \"%s\"\n", cValue);
+            ERROR("unknown window_type value \"%s\"", cValue);
             match->error = g_strdup("unknown window_type value");
         }
 

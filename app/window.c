@@ -41,7 +41,7 @@ void window_free(GWMWindow *win)
 void window_update_role(GWMWindow *win, xcb_get_property_reply_t *prop)
 {
     if (prop == NULL || xcb_get_property_value_length(prop) == 0) {
-        DEBUG("WM_WINDOW_ROLE not set.\n");
+        DEBUG("WM_WINDOW_ROLE not set.");
         FREE(prop);
         return;
     }
@@ -49,7 +49,7 @@ void window_update_role(GWMWindow *win, xcb_get_property_reply_t *prop)
     char *new_role = g_strdup_printf("%.*s", xcb_get_property_value_length(prop), (char *)xcb_get_property_value(prop));
     FREE(win->role);
     win->role = new_role;
-    DEBUG("WM_WINDOW_ROLE changed to \"%s\"\n", win->role);
+    DEBUG("WM_WINDOW_ROLE changed to \"%s\"", win->role);
 
     free(prop);
 }
@@ -62,7 +62,7 @@ void window_update_icon(GWMWindow *win, xcb_get_property_reply_t *prop)
     const uint32_t pref_size = (uint32_t)(render_deco_height() - dpi_logical_px(2));
 
     if (!prop || prop->type != XCB_ATOM_CARDINAL || prop->format != 32) {
-        DEBUG("_NET_WM_ICON is not set\n");
+        DEBUG("_NET_WM_ICON is not set");
         FREE(prop);
         return;
     }
@@ -80,7 +80,7 @@ void window_update_icon(GWMWindow *win, xcb_get_property_reply_t *prop)
             break;
         }
 
-        DEBUG("Found _NET_WM_ICON of size: (%d,%d)\n", cur_width, cur_height);
+        DEBUG("Found _NET_WM_ICON of size: (%d,%d)", cur_width, cur_height);
 
         const bool at_least_preferred_size = (cur_width >= pref_size && cur_height >= pref_size);
         const bool smaller_than_current = (cur_width < width || cur_height < height);
@@ -143,7 +143,7 @@ void window_update_icon(GWMWindow *win, xcb_get_property_reply_t *prop)
 void window_update_name(GWMWindow *win, xcb_get_property_reply_t *prop)
 {
     if (prop == NULL || xcb_get_property_value_length(prop) == 0) {
-        DEBUG("_NET_WM_NAME not specified, not changing\n");
+        DEBUG("_NET_WM_NAME not specified, not changing");
         FREE(prop);
         return;
     }
@@ -162,7 +162,7 @@ void window_update_name(GWMWindow *win, xcb_get_property_reply_t *prop)
         extend_wm_hint_update_visible_name(win->id, (name));
     }
     win->nameXChanged = true;
-    DEBUG ("_NET_WM_NAME changed to \"%s\"\n", (win->name));
+    DEBUG ("_NET_WM_NAME changed to \"%s\"", (win->name));
 
     win->usesNetWMName = true;
 
@@ -172,7 +172,7 @@ void window_update_name(GWMWindow *win, xcb_get_property_reply_t *prop)
 void window_update_class(GWMWindow *win, xcb_get_property_reply_t *prop)
 {
     if (prop == NULL || xcb_get_property_value_length(prop) == 0) {
-        DEBUG("WM_CLASS not set.\n");
+        DEBUG("WM_CLASS not set.");
         FREE(prop);
         return;
     }
@@ -199,7 +199,7 @@ void window_update_class(GWMWindow *win, xcb_get_property_reply_t *prop)
 void window_update_leader(GWMWindow *win, xcb_get_property_reply_t *prop)
 {
     if (prop == NULL || xcb_get_property_value_length(prop) == 0) {
-        DEBUG("CLIENT_LEADER not set on window 0x%08x.\n", win->id);
+        DEBUG("CLIENT_LEADER not set on window 0x%08x.", win->id);
         win->leader = XCB_NONE;
         FREE(prop);
         return;
@@ -211,7 +211,7 @@ void window_update_leader(GWMWindow *win, xcb_get_property_reply_t *prop)
         return;
     }
 
-    DEBUG("Client leader changed to %08x\n", *leader);
+    DEBUG("Client leader changed to %08x", *leader);
 
     win->leader = *leader;
 
@@ -221,14 +221,14 @@ void window_update_leader(GWMWindow *win, xcb_get_property_reply_t *prop)
 void window_update_machine(GWMWindow *win, xcb_get_property_reply_t *prop)
 {
     if (prop == NULL || xcb_get_property_value_length(prop) == 0) {
-        DEBUG("WM_CLIENT_MACHINE not set.\n");
+        DEBUG("WM_CLIENT_MACHINE not set.");
         FREE(prop);
         return;
     }
 
     FREE(win->machine);
     win->machine = g_strndup((char *)xcb_get_property_value(prop), xcb_get_property_value_length(prop));
-    DEBUG("WM_CLIENT_MACHINE changed to \"%s\"\n", win->machine);
+    DEBUG("WM_CLIENT_MACHINE changed to \"%s\"", win->machine);
 
     free(prop);
 }
@@ -238,12 +238,12 @@ void window_update_type(GWMWindow *window, xcb_get_property_reply_t *reply)
     xcb_atom_t new_type = xcb_gwm_get_preferred_window_type(reply);
     free(reply);
     if (new_type == XCB_NONE) {
-        DEBUG("cannot read _NET_WM_WINDOW_TYPE from window.\n");
+        DEBUG("cannot read _NET_WM_WINDOW_TYPE from window.");
         return;
     }
 
     window->windowType = new_type;
-    DEBUG("_NET_WM_WINDOW_TYPE changed to %i.\n", window->windowType);
+    DEBUG("_NET_WM_WINDOW_TYPE changed to %i.", window->windowType);
 
     assignments_run(window);
 }
@@ -251,7 +251,7 @@ void window_update_type(GWMWindow *window, xcb_get_property_reply_t *reply)
 void window_update_name_legacy(GWMWindow *win, xcb_get_property_reply_t *prop)
 {
     if (prop == NULL || xcb_get_property_value_length(prop) == 0) {
-        DEBUG("WM_NAME not set (_NET_WM_NAME is what you want anyways).\n");
+        DEBUG("WM_NAME not set (_NET_WM_NAME is what you want anyways).");
         FREE(prop);
         return;
     }
@@ -274,8 +274,8 @@ void window_update_name_legacy(GWMWindow *win, xcb_get_property_reply_t *prop)
         extend_wm_hint_update_visible_name(win->id, (name));
     }
 
-    DEBUG("WM_NAME changed to \"%s\"\n", (win->name));
-    DEBUG("Using legacy window title. Note that in order to get Unicode window titles in i3, the application has to set _NET_WM_NAME (UTF-8)\n");
+    DEBUG("WM_NAME changed to \"%s\"", (win->name));
+    DEBUG("Using legacy window title. Note that in order to get Unicode window titles in i3, the application has to set _NET_WM_NAME (UTF-8)");
 
     win->nameXChanged = true;
 
@@ -285,7 +285,7 @@ void window_update_name_legacy(GWMWindow *win, xcb_get_property_reply_t *prop)
 void window_update_strut_partial(GWMWindow *win, xcb_get_property_reply_t *prop)
 {
     if (prop == NULL || xcb_get_property_value_length(prop) == 0) {
-        DEBUG("_NET_WM_STRUT_PARTIAL not set.\n");
+        DEBUG("_NET_WM_STRUT_PARTIAL not set.");
         FREE(prop);
         return;
     }
@@ -306,7 +306,7 @@ void window_update_strut_partial(GWMWindow *win, xcb_get_property_reply_t *prop)
 void window_update_transient_for(GWMWindow *win, xcb_get_property_reply_t *prop)
 {
     if (prop == NULL || xcb_get_property_value_length(prop) == 0) {
-        DEBUG("TRANSIENT_FOR not set on window 0x%08x.\n", win->id);
+        DEBUG("TRANSIENT_FOR not set on window 0x%08x.", win->id);
         win->transientFor = XCB_NONE;
         FREE(prop);
         return;
@@ -318,7 +318,7 @@ void window_update_transient_for(GWMWindow *win, xcb_get_property_reply_t *prop)
         return;
     }
 
-    DEBUG("Transient for changed to 0x%08x (window 0x%08x)\n", transient_for, win->id);
+    DEBUG("Transient for changed to 0x%08x (window 0x%08x)", transient_for, win->id);
 
     win->transientFor = transient_for;
 
@@ -332,7 +332,7 @@ void window_update_hints(GWMWindow *win, xcb_get_property_reply_t *prop, bool *u
     }
 
     if (prop == NULL || xcb_get_property_value_length(prop) == 0) {
-        DEBUG("WM_HINTS not set.\n");
+        DEBUG("WM_HINTS not set.");
         FREE(prop);
         return;
     }
@@ -340,14 +340,14 @@ void window_update_hints(GWMWindow *win, xcb_get_property_reply_t *prop, bool *u
     xcb_icccm_wm_hints_t hints;
 
     if (!xcb_icccm_get_wm_hints_from_reply(&hints, prop)) {
-        DEBUG("Could not get WM_HINTS\n");
+        DEBUG("Could not get WM_HINTS");
         free(prop);
         return;
     }
 
     if (hints.flags & XCB_ICCCM_WM_HINT_INPUT) {
         win->doesNotAcceptFocus = !hints.input;
-        DEBUG("WM_HINTS.input changed to \"%d\"\n", hints.input);
+        DEBUG("WM_HINTS.input changed to \"%d\"", hints.input);
     }
 
     if (urgencyHint != NULL) {
@@ -393,7 +393,7 @@ bool window_update_normal_hints(GWMWindow *win, xcb_get_property_reply_t *reply,
         success = xcb_icccm_get_wm_normal_hints_reply(gConn, xcb_icccm_get_wm_normal_hints_unchecked(gConn, win->id), &size_hints, NULL);
     }
     if (!success) {
-        DEBUG("Could not get WM_NORMAL_HINTS\n");
+        DEBUG("Could not get WM_NORMAL_HINTS");
         return false;
     }
 
@@ -406,14 +406,14 @@ bool window_update_normal_hints(GWMWindow *win, xcb_get_property_reply_t *reply,
     } while (0)
 
     if ((size_hints.flags & XCB_ICCCM_SIZE_HINT_P_MIN_SIZE)) {
-        DEBUG("Minimum size: %d (width) x %d (height)\n", size_hints.min_width, size_hints.min_height);
+        DEBUG("Minimum size: %d (width) x %d (height)", size_hints.min_width, size_hints.min_height);
 
         ASSIGN_IF_CHANGED(win->minWidth, size_hints.min_width);
         ASSIGN_IF_CHANGED(win->minHeight, size_hints.min_height);
     }
 
     if ((size_hints.flags & XCB_ICCCM_SIZE_HINT_P_MAX_SIZE)) {
-        DEBUG("Maximum size: %d (width) x %d (height)\n", size_hints.max_width, size_hints.max_height);
+        DEBUG("Maximum size: %d (width) x %d (height)", size_hints.max_width, size_hints.max_height);
 
         int max_width = MAX(0, size_hints.max_width);
         int max_height = MAX(0, size_hints.max_height);
@@ -422,14 +422,14 @@ bool window_update_normal_hints(GWMWindow *win, xcb_get_property_reply_t *reply,
         ASSIGN_IF_CHANGED(win->maxHeight, max_height);
     }
     else {
-        DEBUG("Clearing maximum size\n");
+        DEBUG("Clearing maximum size");
 
         ASSIGN_IF_CHANGED(win->maxWidth, 0);
         ASSIGN_IF_CHANGED(win->maxHeight, 0);
     }
 
     if ((size_hints.flags & XCB_ICCCM_SIZE_HINT_P_RESIZE_INC)) {
-        DEBUG("Size increments: %d (width) x %d (height)\n", size_hints.width_inc, size_hints.height_inc);
+        DEBUG("Size increments: %d (width) x %d (height)", size_hints.width_inc, size_hints.height_inc);
 
         if (size_hints.width_inc > 0 && size_hints.width_inc < 0xFFFF) {
             ASSIGN_IF_CHANGED(win->widthInc, size_hints.width_inc);
@@ -445,20 +445,20 @@ bool window_update_normal_hints(GWMWindow *win, xcb_get_property_reply_t *reply,
         }
     }
     else {
-        DEBUG("Clearing size increments\n");
+        DEBUG("Clearing size increments");
 
         ASSIGN_IF_CHANGED(win->widthInc, 0);
         ASSIGN_IF_CHANGED(win->heightInc, 0);
     }
 
     if (size_hints.flags & XCB_ICCCM_SIZE_HINT_BASE_SIZE && (win->baseWidth >= 0) && (win->baseHeight >= 0)) {
-        DEBUG("Base size: %d (width) x %d (height)\n", size_hints.base_width, size_hints.base_height);
+        DEBUG("Base size: %d (width) x %d (height)", size_hints.base_width, size_hints.base_height);
 
         ASSIGN_IF_CHANGED(win->baseWidth, size_hints.base_width);
         ASSIGN_IF_CHANGED(win->baseHeight, size_hints.base_height);
     }
     else {
-        DEBUG("Clearing base size\n");
+        DEBUG("Clearing base size");
 
         ASSIGN_IF_CHANGED(win->baseWidth, 0);
         ASSIGN_IF_CHANGED(win->baseHeight, 0);
@@ -467,7 +467,7 @@ bool window_update_normal_hints(GWMWindow *win, xcb_get_property_reply_t *reply,
     if (geom != NULL &&
         (size_hints.flags & XCB_ICCCM_SIZE_HINT_US_POSITION || size_hints.flags & XCB_ICCCM_SIZE_HINT_P_POSITION) &&
         (size_hints.flags & XCB_ICCCM_SIZE_HINT_US_SIZE || size_hints.flags & XCB_ICCCM_SIZE_HINT_P_SIZE)) {
-        DEBUG("Setting geometry x=%d y=%d w=%d h=%d\n", size_hints.x, size_hints.y, size_hints.width, size_hints.height);
+        DEBUG("Setting geometry x=%d y=%d w=%d h=%d", size_hints.x, size_hints.y, size_hints.width, size_hints.height);
         geom->x = size_hints.x;
         geom->y = size_hints.y;
         geom->width = size_hints.width;
@@ -479,7 +479,7 @@ bool window_update_normal_hints(GWMWindow *win, xcb_get_property_reply_t *reply,
         (size_hints.max_aspect_num >= 0) && (size_hints.max_aspect_den > 0)) {
         double min_aspect = (double)size_hints.min_aspect_num / size_hints.min_aspect_den;
         double max_aspect = (double)size_hints.max_aspect_num / size_hints.max_aspect_den;
-        DEBUG("Aspect ratio set: minimum %f, maximum %f\n", min_aspect, max_aspect);
+        DEBUG("Aspect ratio set: minimum %f, maximum %f", min_aspect, max_aspect);
         if (ABS(win->minAspectRatio - min_aspect) > DBL_EPSILON) {
             win->minAspectRatio = min_aspect;
             changed = true;
@@ -490,7 +490,7 @@ bool window_update_normal_hints(GWMWindow *win, xcb_get_property_reply_t *reply,
         }
     }
     else {
-        DEBUG("Clearing aspect ratios\n");
+        DEBUG("Clearing aspect ratios");
 
         ASSIGN_IF_CHANGED(win->minAspectRatio, 0.0);
         ASSIGN_IF_CHANGED(win->maxAspectRatio, 0.0);
