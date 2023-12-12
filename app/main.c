@@ -82,6 +82,7 @@ xcb_atom_t                              gExtendWMHintsWindow;
 xcb_window_t                            gRoot = 0;
 xcb_connection_t*                       gConn = NULL;
 xcb_randr_get_output_primary_reply_t*   gPrimary = NULL;
+xcb_key_symbols_t*                      gKeySyms = NULL;
 SnDisplay*                              gSnDisplay = NULL;
 xcb_screen_t*                           gRootScreen = NULL;
 xcb_visualtype_t*                       gVisualType = NULL;
@@ -95,16 +96,15 @@ const char*                             gLogPath = "/tmp/graceful-wm.log";
 
 GWMConfig                               gConfig;
 
-GWMContainer*                           gContainerRoot = NULL;
 GWMContainer*                           gFocused = NULL;
+GWMContainer*                           gContainerRoot = NULL;
 
 GWMOutputHead                           gOutputs = TAILQ_HEAD_INITIALIZER(gOutputs);
 GWMAssignmentHead                       gAssignments = TAILQ_HEAD_INITIALIZER(gAssignments);
 GWMAllContainerHead                     gAllContainer = TAILQ_HEAD_INITIALIZER(gAllContainer);
 GWMWorkspaceAssignmentsHead             gWorkspaceAssignments = TAILQ_HEAD_INITIALIZER(gWorkspaceAssignments);
-
-GSList*                                 gConfigModes;                           // GWMConfigMode
-TAILQ_HEAD(bindingsHead, Binding)*      gBindings = NULL;
+GWMModeHead                             gConfigModes;
+GWMBindingHead*                         gBindings = NULL;
 SLIST_HEAD(colorPixelHead, ColorPixel)  gColorPixels;
 
 xcb_window_t                            gFocusedID = XCB_NONE;

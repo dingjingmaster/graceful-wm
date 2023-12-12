@@ -14,11 +14,22 @@
 #include <xcb/randr.h>
 #include <glib/gi18n.h>
 #include <xcb/xcb_aux.h>
-#include <xcb/xcb_icccm.h>
-
 #include <cairo/cairo.h>
 #include <pango/pango.h>
+#include <xcb/xcb_icccm.h>
+#include <xcb/xcb_keysyms.h>
 #include <libsn/sn-launcher.h>
+
+/** Mouse buttons */
+#define XCB_BUTTON_CLICK_LEFT       XCB_BUTTON_INDEX_1
+#define XCB_BUTTON_CLICK_MIDDLE     XCB_BUTTON_INDEX_2
+#define XCB_BUTTON_CLICK_RIGHT      XCB_BUTTON_INDEX_3
+#define XCB_BUTTON_SCROLL_UP        XCB_BUTTON_INDEX_4
+#define XCB_BUTTON_SCROLL_DOWN      XCB_BUTTON_INDEX_5
+
+/* xcb doesn't define constants for these. */
+#define XCB_BUTTON_SCROLL_LEFT      6
+#define XCB_BUTTON_SCROLL_RIGHT     7
 
 #if 1
 
@@ -622,12 +633,14 @@ typedef struct Config                       GWMConfig;                  // ok
 typedef struct Window                       GWMWindow;                  // ok
 typedef struct Surface                      GWMSurface;                 // ok
 typedef struct Binding                      GWMBinding;                 // ok
+typedef struct ModeHead                     GWMModeHead;                // ok
 typedef struct Container                    GWMContainer;               // ok
 typedef struct Colortriple                  GWMColoriple;               // ok
 typedef struct OutputHead                   GWMOutputHead;              // ok
 typedef struct ColorPixel                   GWMColorPixel;              // ok
 typedef struct OutputName                   GWMOutputName;              // ok
 typedef struct Assignment                   GWMAssignment;              // ok
+typedef struct BindingHead                  GWMBindingHead;             // ok
 typedef struct RenderParams                 GWMRenderParams;            // ok
 typedef struct CommandResult                GWMCommandResult;           // ok
 typedef struct BindingKeycode               GWMBindingKeycode;          // ok
@@ -642,7 +655,9 @@ typedef struct WorkspaceAssignmentsHead     GWMWorkspaceAssignmentsHead;// ok
 typedef struct ConfigMode                   GWMConfigMode;              // ok
 typedef struct ConfigContext                GWMConfigContext;           // ok
 
+SLIST_HEAD(ModeHead, Mode);
 TAILQ_HEAD(OutputHead, Output);
+TAILQ_HEAD(BindingHead, Binding);
 TAILQ_HEAD(AssignmentHead, Assignment);
 TAILQ_HEAD(AllContainerHead, Container);
 TAILQ_HEAD(WorkspaceAssignmentsHead, WorkspaceAssignment);
@@ -1045,7 +1060,7 @@ struct ConfigMode
 {
     char*                                       name;
     bool                                        pangoMarkup;
-    struct BindingsHead*                        bindings;
+    struct BindingHead*                         bindings;
     SLIST_ENTRY(ConfigMode)                     modes;
 };
 

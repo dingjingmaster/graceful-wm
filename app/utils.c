@@ -255,3 +255,46 @@ bool util_update_if_necessary(uint32_t *destination, uint32_t newValue)
 
     return ((*destination = newValue) != oldValue);
 }
+
+GWMOrientation util_orientation_from_direction(GWMDirection direction)
+{
+    return (direction == D_LEFT || direction == D_RIGHT) ? HORIZON : VERT;
+}
+
+const char* util_direction_to_string(GWMDirection direction)
+{
+    switch (direction) {
+        case D_LEFT: {
+            return "left";
+        }
+        case D_RIGHT: {
+            return "right";
+        }
+        case D_UP: {
+            return "up";
+        }
+        case D_DOWN: {
+            return "down";
+        }
+    }
+    return "invalid";
+}
+
+GWMPosition util_position_from_direction(GWMDirection direction)
+{
+    return (direction == D_LEFT || direction == D_UP) ? BEFORE : AFTER;
+}
+
+const char* util_position_to_string(GWMPosition position)
+{
+    switch (position) {
+        case BEFORE: {
+            return "before";
+        }
+        case AFTER: {
+            return "after";
+        }
+    }
+
+    return "invalid";
+}

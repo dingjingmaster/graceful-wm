@@ -399,10 +399,10 @@ void key_binding_regrab_all_buttons(xcb_connection_t *conn)
 void key_binding_reorder_bindings(void)
 {
     GWMConfigMode* mode = NULL;
-    for (GSList* ls = gConfigModes; ls; ls = ls->next) {
-        const bool currentMode = (mode->bindings == gBindings);
+    SLIST_FOREACH (mode, &gConfigModes, modes) {
+        const bool current_mode = (mode->bindings == gBindings);
         reorder_bindings_of_mode(mode);
-        if (currentMode) {
+        if (current_mode) {
             gBindings = mode->bindings;
         }
     }
@@ -427,7 +427,49 @@ void key_binding_free(GWMBinding *bind)
 
 int *key_binding_get_buttons_to_grab(void)
 {
-    return NULL;
+    const int num_max = 25;
+
+    int buffer[num_max];
+    int num = 0;
+
+    /* We always return buttons 1 through 3. */
+    buffer[num++] = 1;
+    buffer[num++] = 2;
+    buffer[num++] = 3;
+
+    GWMBinding *bind;
+    TAILQ_FOREACH (bind, gBindings, bindings) {
+        if (num + 1 == num_max)
+            break;
+
+        if (bind->inputType != B_MOUSE || !bind->wholeWindow)
+            continue;
+
+        long button;
+        if (!util_parse_long(bind->symbol + (sizeof("button") - 1), &button, 10)) {
+            ERROR("Could not parse button number, skipping this binding. Please report this bug in i3.\n");
+            continue;
+        }
+
+        /* Avoid duplicates. */
+        bool exists = false;
+        for (int i = 0; i < num; i++) {
+            if (buffer[i] == button) {
+                exists = true;
+                break;
+            }
+        }
+
+        if (!exists) {
+            buffer[num++] = button;
+        }
+    }
+    buffer[num++] = 0;
+
+    int *buttons = g_malloc0(num * sizeof(int));
+    memcpy(buttons, buffer, num * sizeof(int));
+
+    return buttons;
 }
 
 void key_binding_switch_mode(const char *newMode)
@@ -436,34 +478,29 @@ void key_binding_switch_mode(const char *newMode)
 
     DEBUG(_("Switching to mode %s"), newMode);
 
-    for (GList* ls1 = gConfigModes; ls1; ls1 = ls1->next) {
-//    SLIST_FOREACH (mode, &modes, modes) {
+    SLIST_FOREACH (mode, &gConfigModes, modes) {
         if (strcmp(mode->name, newMode) != 0) {
             continue;
         }
 
-        key_binding_ungrab_all_keys(gConn);
+        config_ungrab_all_keys(gConn);
         gBindings = mode->bindings;
         gCurrentBindingMode = mode->name;
         key_binding_translate_keysyms();
         key_binding_grab_all_keys(gConn);
         key_binding_regrab_all_buttons(gConn);
 
-        /* Reset all B_UPON_KEYRELEASE_IGNORE_MODS bindings to avoid possibly
-         * activating one of them. */
-        GWMBinding* bind = NULL;
-        for (GList* ls2 = gBindings; ls2; ls2 = ls2->next) {
-//        TAILQ_FOREACH (bind, bindings, bindings) {
+        GWMBinding *bind;
+        TAILQ_FOREACH (bind, gBindings, bindings) {
             if (bind->release == B_UPON_KEYRELEASE_IGNORE_MODS) {
                 bind->release = B_UPON_KEYRELEASE;
             }
         }
 
-        g_autofree char *eventMsg = g_strdup_printf("{\"change\":\"%s\", \"pango_markup\":%s}", mode->name, (mode->pangoMarkup ? "true" : "false"));
-
+        char *event_msg = g_strdup_printf("{\"change\":\"%s\", \"pango_markup\":%s}", mode->name, (mode->pangoMarkup ? "true" : "false"));
 
 //        ipc_send_event("mode", I3_IPC_EVENT_MODE, event_msg);
-//        FREE(event_msg);
+        FREE(event_msg);
 
         return;
     }
@@ -593,24 +630,19 @@ static int fill_rmlvo_from_root(struct xkb_rule_names *xkbNames)
 static GWMConfigMode* mode_from_name(const char *name, bool pangoMarkup)
 {
     GWMConfigMode* mode = NULL;
-
-    /* Try to find the mode in the list of modes and return it */
-//    SLIST_FOREACH (mode, &modes, modes) {
-    for (GSList* ls = gConfigModes; ls; ls = ls->next) {
-        mode = ls->data;
+    SLIST_FOREACH (mode, &gConfigModes, modes) {
         if (strcmp(mode->name, name) == 0) {
             return mode;
         }
     }
 
     /* If the mode was not found, create a new one */
-    mode = g_malloc0 (sizeof(GWMConfigMode));
-    g_return_val_if_fail(mode, NULL);
-
+    mode = g_malloc0(sizeof(struct ConfigMode));
     mode->name = g_strdup(name);
     mode->pangoMarkup = pangoMarkup;
-    mode->bindings = NULL; //g_malloc0 (sizeof(struct bindings_head));
-    gConfigModes = g_slist_append(gConfigModes, mode);
+    mode->bindings = g_malloc0(sizeof(GWMBindingHead ));
+    TAILQ_INIT(mode->bindings);
+    SLIST_INSERT_HEAD(&gConfigModes, mode, modes);
 
     return mode;
 }

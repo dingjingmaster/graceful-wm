@@ -41,6 +41,12 @@ uint32_t util_get_mod_mask_for (uint32_t keySym, xcb_key_symbols_t* symbols, xcb
 bool util_name_is_digits(const char *name);
 int util_ws_name_to_number(const char *name);
 
+const char* util_position_to_string(GWMPosition position);
+GWMPosition util_position_from_direction(GWMDirection direction);
+
+const char* util_direction_to_string(GWMDirection direction);
+GWMOrientation util_orientation_from_direction(GWMDirection direction);
+
 bool util_update_if_necessary(uint32_t* destination, uint32_t newValue);
 
 #endif //GRACEFUL_WM_UTILS_H

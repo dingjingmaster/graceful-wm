@@ -4,6 +4,7 @@
 
 #ifndef GRACEFUL_WM_VAL_H
 #define GRACEFUL_WM_VAL_H
+
 #include "types.h"
 #include "xmacro-atoms_reset.h"
 #include "xmacro-atoms_NET-SUPPORTED.h"
@@ -19,9 +20,11 @@ extern uint8_t                                  gRootDepth;
 extern int                                      gConnScreen;
 extern int                                      gXKBCurrentGroup;
 
+extern xcb_atom_t                               gWMSn;
 extern xcb_window_t                             gRoot;
 extern xcb_connection_t*                        gConn;
 extern GWMContainer*                            gFocused;
+extern xcb_key_symbols_t*                       gKeySyms;
 extern struct ev_loop*                          gMainLoop;
 extern xcb_colormap_t                           gColormap;
 extern xcb_window_t                             gFocusedID;
@@ -32,9 +35,11 @@ extern xcb_timestamp_t                          gLastTimestamp;
 extern GWMContainer*                            gContainerRoot;
 extern xcb_atom_t                               gExtendWMHintsWindow;
 
-extern GWMOutputHead                            gOutputs;
 extern struct ev_prepare*                       gXcbPrepare;
-extern GSList*                                  gConfigModes;                   // GWMConfigMode
+
+extern GWMOutputHead                            gOutputs;
+extern GWMBindingHead*                          gBindings;
+extern GWMModeHead                              gConfigModes;
 extern GWMAssignmentHead                        gAssignments;
 extern GWMAllContainerHead                      gAllContainer;
 extern unsigned int                             gXCBNumLockMask;
@@ -47,8 +52,6 @@ extern char*                                    gCurrentConfigPath;
 extern const char*                              gCurrentBindingMode;
 extern char*                                    gCurrentLogStreamSocketPath;
 extern xcb_randr_get_output_primary_reply_t*    gPrimary;
-
-extern TAILQ_HEAD(bindingsHead, Binding)*       gBindings;
 extern SLIST_HEAD(colorPixelHead, ColorPixel)   gColorPixels;
 
 extern GWMConfig                                gConfig;

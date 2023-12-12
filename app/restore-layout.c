@@ -129,6 +129,11 @@ void restore_open_placeholder_windows(GWMContainer* con)
     }
 }
 
+bool restore_kill_placeholder(xcb_window_t placeholder)
+{
+    return 0;
+}
+
 static void restore_xcb_got_event(EV_P_ struct ev_io *w, int rEvents)
 {
 

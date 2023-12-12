@@ -8,6 +8,7 @@
 
 
 void restore_connect(void);
+bool restore_kill_placeholder(xcb_window_t placeholder);
 void restore_open_placeholder_windows(GWMContainer* parent);
 
 #endif //GRACEFUL_WM_RESTORE_LAYOUT_H
