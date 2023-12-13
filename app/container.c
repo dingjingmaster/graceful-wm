@@ -522,8 +522,9 @@ char* container_parse_title_format(GWMContainer *con)
 GWMContainer *container_get_output(GWMContainer *con)
 {
     GWMContainer* result = con;
-    while (result != NULL && result->type != CT_OUTPUT)
+    while (result != NULL && result->type != CT_OUTPUT) {
         result = result->parent;
+    }
     g_assert(result != NULL);
     return result;
 }

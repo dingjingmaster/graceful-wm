@@ -307,7 +307,7 @@ void workspace_show(GWMContainer* workspace)
 //                old_focus = NULL;
 //            }
 //
-//            ewmh_update_desktop_properties();
+            extend_wm_hint_update_desktop_properties();
         }
     }
 

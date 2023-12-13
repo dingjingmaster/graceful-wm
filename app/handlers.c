@@ -1309,7 +1309,8 @@ static void handle_client_message(xcb_client_message_event_t *event)
         else {
             DEBUG("Not handling WM_CHANGE_STATE request. (window = %08x, state = %d)", event->window, event->data.data32[0]);
         }
-    } else if (event->type == A__NET_CURRENT_DESKTOP) {
+    }
+    else if (event->type == A__NET_CURRENT_DESKTOP) {
         DEBUG("Request to change current desktop to index %d", event->data.data32[0]);
         GWMContainer* ws = extend_wm_hint_get_workspace_by_index(event->data.data32[0]);
         if (ws == NULL) {
@@ -1320,7 +1321,8 @@ static void handle_client_message(xcb_client_message_event_t *event)
         DEBUG("Handling request to focus workspace %s", ws->name);
         workspace_show(ws);
         tree_render();
-    } else if (event->type == A__NET_WM_DESKTOP) {
+    }
+    else if (event->type == A__NET_WM_DESKTOP) {
         uint32_t index = event->data.data32[0];
         DEBUG("Request to move window %d to EWMH desktop index %d", event->window, index);
 

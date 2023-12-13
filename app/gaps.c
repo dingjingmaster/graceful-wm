@@ -8,6 +8,7 @@
 #include "log.h"
 #include "container.h"
 #include "output.h"
+#include "resize.h"
 
 GWMGaps gaps_for_workspace(GWMContainer* con)
 {

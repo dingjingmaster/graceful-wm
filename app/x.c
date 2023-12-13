@@ -185,7 +185,25 @@ void x_container_kill(GWMContainer *con)
 
 bool x_window_supports_protocol(xcb_window_t window, xcb_atom_t atom)
 {
-    return 0;
+    xcb_get_property_cookie_t cookie;
+    xcb_icccm_get_wm_protocols_reply_t protocols;
+    bool result = false;
+
+    cookie = xcb_icccm_get_wm_protocols(gConn, window, A_WM_PROTOCOLS);
+    if (xcb_icccm_get_wm_protocols_reply(gConn, cookie, &protocols, NULL) != 1) {
+        return false;
+    }
+
+    /* Check if the client’s protocols have the requested atom set */
+    for (uint32_t i = 0; i < protocols.atoms_len; i++) {
+        if (protocols.atoms[i] == atom) {
+            result = true;
+        }
+    }
+
+    xcb_icccm_get_wm_protocols_reply_wipe(&protocols);
+
+    return result;
 }
 
 void x_container_reframe(GWMContainer *con)
@@ -904,8 +922,9 @@ void x_set_gwm_atoms(void)
 
 void x_set_warp_to(GWMRect *rect)
 {
-//    if (config.mouse_warping != POINTER_WARPING_NONE)
-//        gWarpTo = rect;
+    if (gConfig.mouseWarping != POINTER_WARPING_NONE) {
+        gWarpTo = rect;
+    }
 }
 
 void x_set_shape(GWMContainer *con, xcb_shape_sk_t kind, bool enable)

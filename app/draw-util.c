@@ -231,7 +231,22 @@ void draw_util_draw_text(const char* text, xcb_drawable_t drawable, xcb_gcontext
 
 void draw_util_copy_surface(GWMSurface *src, GWMSurface *destin, double srcX, double srcY, double destinX, double destinY, double width, double height)
 {
+    if (!surface_initialized(src) || !surface_initialized(destin)) {
+        return;
+    }
 
+    cairo_save(destin->cairo);
+
+    cairo_set_operator(destin->cairo, CAIRO_OPERATOR_SOURCE);
+    cairo_set_source_surface(destin->cairo, src->surface, destinY - srcX, destinY - srcY);
+
+    cairo_rectangle(destin->cairo, destinX, destinY, width, height);
+    cairo_fill(destin->cairo);
+
+    CAIRO_SURFACE_FLUSH(src->surface);
+    CAIRO_SURFACE_FLUSH(destin->surface);
+
+    cairo_restore(destin->cairo);
 }
 
 uint16_t draw_util_get_visual_depth(xcb_visualid_t visualID)

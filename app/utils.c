@@ -161,40 +161,56 @@ ssize_t util_slurp(const char *path, char **buf)
 
 GWMRect util_rect_add(GWMRect a, GWMRect b)
 {
-    GWMRect result;
-    return result;
+    return (GWMRect){a.x + b.x, a.y + b.y, a.width + b.width, a.height + b.height};
 }
 
 GWMRect util_rect_sub(GWMRect a, GWMRect b)
 {
-    GWMRect result;
-    return result;
+    return (GWMRect){a.x - b.x, a.y - b.y, a.width - b.width, a.height - b.height};
 }
 
 bool util_rect_equals(GWMRect a, GWMRect b)
 {
-    return 0;
+    return a.x == b.x && a.y == b.y && a.width == b.width && a.height == b.height;
 }
 
 GWMRect util_rect_sanitize_dimensions(GWMRect rect)
 {
-    GWMRect result;
-    return result;
+    rect.width = (int32_t)rect.width <= 0 ? 1 : rect.width;
+    rect.height = (int32_t)rect.height <= 0 ? 1 : rect.height;
+
+    return rect;
 }
 
 bool util_rect_contains(GWMRect rect, uint32_t x, uint32_t y)
 {
-    return 0;
+    return (x >= rect.x
+        && x <= (rect.x + rect.width)
+        && y >= rect.y
+        && y <= (rect.y + rect.height));
 }
 
 bool util_name_is_digits(const char *name)
 {
-    return 0;
+    for (size_t i = 0; i < strlen(name); i++) {
+        if (!g_ascii_isdigit(name[i])) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 int util_ws_name_to_number(const char *name)
 {
-    return 0;
+    char *endPtr = NULL;
+    errno = 0;
+    long long parsedNum = strtoll(name, &endPtr, 10);
+    if (errno != 0 || parsedNum > INT32_MAX || parsedNum < 0 || endPtr == name) {
+        parsedNum = -1;
+    }
+
+    return parsedNum;
 }
 
 

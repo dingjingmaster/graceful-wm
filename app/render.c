@@ -242,9 +242,9 @@ static void render_root(GWMContainer* con, GWMContainer* fullscreen)
         GWMContainer* child;
         TAILQ_FOREACH (child, &(workspace->floatingHead), floatingWindows) {
             if (fullscreen != NULL) {
-//                if (config.popup_during_fullscreen != PDF_SMART || fullscreen->window == NULL) {
-//                    continue;
-//                }
+                if (gConfig.popupDuringFullscreen != PDF_SMART || fullscreen->window == NULL) {
+                    continue;
+                }
 
                 GWMContainer* floating_child = container_descend_focused(child);
                 if (container_find_transient_for_window(floating_child, fullscreen->window->id)) {
