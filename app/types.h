@@ -5,6 +5,7 @@
 #ifndef GRACEFUL_WM_TYPES_H
 #define GRACEFUL_WM_TYPES_H
 #include <ev.h>
+#include <math.h>
 #include <glib.h>
 #include <pcre2.h>
 #include <stdint.h>

@@ -6,8 +6,8 @@
 #define GRACEFUL_WM_SCRATCHPAD_H
 #include "types.h"
 
-void scratchpad_show();
 void scratchpad_fix_resolution(void);
+bool scratchpad_show(GWMContainer* con);
 void scratchpad_move(GWMContainer* con);
 
 

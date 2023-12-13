@@ -131,7 +131,22 @@ void restore_open_placeholder_windows(GWMContainer* con)
 
 bool restore_kill_placeholder(xcb_window_t placeholder)
 {
-    return 0;
+    GWMPlaceholderState* state;
+    TAILQ_FOREACH (state, &gsStateHead, state) {
+        if (state->window != placeholder) {
+            continue;
+        }
+
+        xcb_destroy_window(gsRestoreConn, state->window);
+        draw_util_surface_free(gsRestoreConn, &(state->surface));
+        TAILQ_REMOVE(&gsStateHead, state, state);
+        free(state);
+        DEBUG("placeholder window 0x%08x destroyed.", placeholder);
+        return true;
+    }
+
+    DEBUG("0x%08x is not a placeholder window, ignoring.", placeholder);
+    return false;
 }
 
 static void restore_xcb_got_event(EV_P_ struct ev_io *w, int rEvents)
