@@ -270,73 +270,66 @@ void handler_handle_event(int type, xcb_generic_event_t *event)
         if (shape->shape_kind == XCB_SHAPE_SK_BOUNDING || shape->shape_kind == XCB_SHAPE_SK_INPUT) {
             x_set_shape(con, shape->shape_kind, shape->shaped);
         }
-
         return;
     }
 
     switch (type) {
         case XCB_KEY_PRESS:
-        case XCB_KEY_RELEASE:
+        case XCB_KEY_RELEASE: {
             handle_key_press((xcb_key_press_event_t *)event);
             break;
-
+        }
         case XCB_BUTTON_PRESS:
-        case XCB_BUTTON_RELEASE:
+        case XCB_BUTTON_RELEASE: {
             handle_button_press((xcb_button_press_event_t *)event);
             break;
-
-        case XCB_MAP_REQUEST:
+        }
+        case XCB_MAP_REQUEST: {
             handle_map_request((xcb_map_request_event_t *)event);
             break;
-
-        case XCB_UNMAP_NOTIFY:
+        }
+        case XCB_UNMAP_NOTIFY: {
             handle_unmap_notify_event((xcb_unmap_notify_event_t *)event);
             break;
-
-        case XCB_DESTROY_NOTIFY:
+        }
+        case XCB_DESTROY_NOTIFY: {
             handle_destroy_notify_event((xcb_destroy_notify_event_t *)event);
             break;
-
-        case XCB_EXPOSE:
+        }
+        case XCB_EXPOSE: {
             if (((xcb_expose_event_t *)event)->count == 0) {
                 handler_handle_expose_event((xcb_expose_event_t *)event);
             }
-
             break;
-
-        case XCB_MOTION_NOTIFY:
+        }
+        case XCB_MOTION_NOTIFY: {
             handle_motion_notify((xcb_motion_notify_event_t *)event);
             break;
-
-            /* Enter window = user moved their mouse over the window */
-        case XCB_ENTER_NOTIFY:
+        }
+        case XCB_ENTER_NOTIFY: {
             handle_enter_notify((xcb_enter_notify_event_t *)event);
             break;
-
-            /* Client message are sent to the root window. The only interesting
-             * client message for us is _NET_WM_STATE, we honour
-             * _NET_WM_STATE_FULLSCREEN and _NET_WM_STATE_DEMANDS_ATTENTION */
-        case XCB_CLIENT_MESSAGE:
+        }
+        case XCB_CLIENT_MESSAGE: {
             handle_client_message((xcb_client_message_event_t *)event);
             break;
-
-            /* Configure request = window tried to change size on its own */
-        case XCB_CONFIGURE_REQUEST:
+        }
+        case XCB_CONFIGURE_REQUEST: {
             handle_configure_request((xcb_configure_request_event_t *)event);
             break;
-
-            /* Mapping notify = keyboard mapping changed (Xmodmap), re-grab bindings */
-        case XCB_MAPPING_NOTIFY:
+        }
+        case XCB_MAPPING_NOTIFY: {
             handle_mapping_notify((xcb_mapping_notify_event_t *)event);
             break;
-
-        case XCB_FOCUS_IN:
+        }
+        case XCB_FOCUS_IN: {
             handle_focus_in((xcb_focus_in_event_t *)event);
             break;
-
-        case XCB_FOCUS_OUT:
+        }
+        case XCB_FOCUS_OUT: {
             handle_focus_out((xcb_focus_out_event_t *)event);
             break;
+        }
 
         case XCB_PROPERTY_NOTIFY: {
             xcb_property_notify_event_t *e = (xcb_property_notify_event_t *)event;
@@ -344,18 +337,18 @@ void handler_handle_event(int type, xcb_generic_event_t *event)
             property_notify(e->state, e->window, e->atom);
             break;
         }
-
-        case XCB_CONFIGURE_NOTIFY:
+        case XCB_CONFIGURE_NOTIFY: {
             handle_configure_notify((xcb_configure_notify_event_t *)event);
             break;
-
-        case XCB_SELECTION_CLEAR:
+        }
+        case XCB_SELECTION_CLEAR: {
             handle_selection_clear((xcb_selection_clear_event_t *)event);
             break;
-
-        default:
+        }
+        default: {
             /* DEBUG("Unhandled event of type %d", type); */
             break;
+        }
     }
 }
 

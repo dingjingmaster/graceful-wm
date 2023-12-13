@@ -57,13 +57,13 @@ bool                                    gShapeSupported = false;
 
 uint8_t                                 gRootDepth = 0;
 
-int                                     gListenFds;
 int                                     gXKBBase = 0;
+int                                     gListenFds = 0;
 int                                     gShapeBase = 0;
 int                                     gConnScreen = 0;
 int                                     gRandrBase = -1;
-int                                     gXKBCurrentGroup;
 int                                     gXCBNubLockMask = 0;
+int                                     gXKBCurrentGroup = 0;
 
 unsigned int                            gXCBNumLockMask = 0;
 
@@ -549,7 +549,6 @@ static void main_handle_term_signal(struct ev_loop *loop, ev_signal *signal, int
 static void xcb_prepare_cb(EV_P_ ev_prepare *w, int revents)
 {
     xcb_generic_event_t *event;
-
     while ((event = xcb_poll_for_event(gConn)) != NULL) {
         if (event->response_type == 0) {
             if (handler_event_is_ignored(event->sequence, 0)) {

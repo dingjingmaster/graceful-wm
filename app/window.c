@@ -152,9 +152,7 @@ void window_update_name(GWMWindow *win, xcb_get_property_reply_t *prop)
 
     /* Truncate the name at the first zero byte. See #3515. */
     const int len = xcb_get_property_value_length(prop);
-    char *name = g_strndup(xcb_get_property_value(prop), len);
-    win->name = (name);
-    FREE(name);
+    win->name = g_strndup(xcb_get_property_value(prop), len);
 
     GWMContainer* con = container_by_window_id(win->id);
     if (con != NULL && con->titleFormat != NULL) {
