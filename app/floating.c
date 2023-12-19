@@ -3,17 +3,18 @@
 //
 
 #include "floating.h"
-#include "container.h"
+
+#include "x.h"
 #include "val.h"
 #include "log.h"
-#include "x.h"
+#include "drag.h"
+#include "move.h"
 #include "utils.h"
 #include "randr.h"
 #include "render.h"
-#include "move.h"
 #include "output.h"
 #include "workspace.h"
-#include "drag.h"
+#include "container.h"
 
 
 struct resize_window_callback_params
@@ -207,6 +208,7 @@ void floating_center(GWMContainer *con, GWMRect rect)
 
 bool floating_enable(GWMContainer *con, bool automatic)
 {
+    return false;
     bool set_focus = (con == gFocused);
 
     if (container_is_docked(con)) {

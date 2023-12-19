@@ -18,7 +18,7 @@ static GOptionContext* gOptionCtx = NULL;
 static GOptionEntry gEntries[] =
     {
         {"replace", 'r', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_INT, &isReplace, N_("Replace an existing window manager.")},
-        {"config", 'c', G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_FILENAME, &configFile, N_("Custom profile path (default :/etc/graceful-wm.conf).")},
+        {"config", 'c', G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_FILENAME, &configFile, N_("Custom profile path (default :/etc/graceful-wm.ini).")},
         {"check", 'C', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_FILENAME, &isOnlyCheckConf, N_("Exits after detecting the configuration file.")},
         {"version", 'v', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_INT, &isShowVersion, N_("Display version information.")},
         NULL

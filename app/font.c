@@ -66,7 +66,7 @@ GWMFont font_load_font(const char *pattern, bool fallback)
     error = xcb_request_check(gConn, font_cookie);
 
     if (fallback && error != NULL) {
-        ERROR("Could not open font %s (X error %d). Trying fallback to 'fixed'.\n", pattern, error->error_code);
+        ERROR("Could not open font %s (X error %d). Trying fallback to 'fixed'.", pattern, error->error_code);
         pattern = "fixed";
         font_cookie = xcb_open_font_checked(gConn, font.specific.xcb.id, strlen(pattern), pattern);
         info_cookie = xcb_query_font(gConn, font.specific.xcb.id);
@@ -75,7 +75,7 @@ GWMFont font_load_font(const char *pattern, bool fallback)
         error = xcb_request_check(gConn, font_cookie);
 
         if (error != NULL) {
-            ERROR("Could not open fallback font 'fixed', trying with '-misc-*'.\n");
+            ERROR("Could not open fallback font 'fixed', trying with '-misc-*'.");
             pattern = "-misc-*";
             font_cookie = xcb_open_font_checked(gConn, font.specific.xcb.id, strlen(pattern), pattern);
             info_cookie = xcb_query_font(gConn, font.specific.xcb.id);
@@ -89,7 +89,7 @@ GWMFont font_load_font(const char *pattern, bool fallback)
     free(error);
 
     font.pattern = g_strdup(pattern);
-    DEBUG("Using X font %s\n", pattern);
+    DEBUG("Using X font %s", pattern);
 
     if (!(font.specific.xcb.info = xcb_query_font_reply(gConn, info_cookie, NULL))) {
         DIE(EXIT_FAILURE, "Could not load font \"%s\"", pattern);
@@ -216,11 +216,11 @@ static bool load_pango_font(GWMFont *font, const char *desc)
 {
     font->specific.pangoDesc = pango_font_description_from_string(desc);
     if (!font->specific.pangoDesc) {
-        ERROR("Could not open font %s with Pango, fallback to X font.\n", desc);
+        ERROR("Could not open font %s with Pango, fallback to X font.", desc);
         return false;
     }
 
-    DEBUG("Using Pango font %s, size %d\n",
+    DEBUG("Using Pango font %s, size %d",
         pango_font_description_get_family(font->specific.pangoDesc),
         pango_font_description_get_size(font->specific.pangoDesc) / PANGO_SCALE);
 
@@ -324,7 +324,7 @@ static int xcb_query_text_width(const xcb_char2b_t *text, size_t text_len)
     /* Make the user know we’re using the slow path, but only once. */
     static bool first_invocation = true;
     if (first_invocation) {
-        fprintf(stderr, "Using slow code path for text extents\n");
+        fprintf(stderr, "Using slow code path for text extents");
         first_invocation = false;
     }
 
@@ -333,7 +333,7 @@ static int xcb_query_text_width(const xcb_char2b_t *text, size_t text_len)
     xcb_query_text_extents_cookie_t cookie = xcb_query_text_extents(gConn, gsSavedFont->specific.xcb.id, text_len, (xcb_char2b_t *)text);
     xcb_query_text_extents_reply_t *reply = xcb_query_text_extents_reply(gConn, cookie, &error);
     if (reply == NULL) {
-        fprintf(stderr, "Could not get text extents (X error code %d)\n", error->error_code);
+        fprintf(stderr, "Could not get text extents (X error code %d)", error->error_code);
         free(error);
         return gsSavedFont->specific.xcb.info->max_bounds.character_width * text_len;
     }
