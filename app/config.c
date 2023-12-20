@@ -118,11 +118,11 @@ bool config_load_configuration(const char *overrideConfigfile)
     gConfig.defaultBorderWidth = dpi_logical_px(2);
     gConfig.defaultFloatingBorderWidth = dpi_logical_px(2);
     gConfig.defaultOrientation = NO_ORIENTATION;                // Set default_orientation to NO_ORIENTATION for auto orientation.
-    gConfig.gaps.inner = 0;
-    gConfig.gaps.top = 0;
-    gConfig.gaps.right = 0;
-    gConfig.gaps.bottom = 0;
-    gConfig.gaps.left = 0;
+    gConfig.gaps.inner = 1;
+    gConfig.gaps.top = 1;
+    gConfig.gaps.right = 1;
+    gConfig.gaps.bottom = 1;
+    gConfig.gaps.left = 1;
 
     /* Set default urgency reset delay to 500ms */
     if (gConfig.workspaceUrgencyTimer == 0) {
@@ -196,7 +196,7 @@ static void init_default_config()
             g_key_file_set_string (gsKeyValue, "MainKey", "M3", "Ctrl");    // ctrl
             g_key_file_set_comment(gsKeyValue, "MainKey", "M3", _("Set the third button of the shortcut key (not required)"), NULL);
 
-            g_key_file_set_comment(gsKeyValue, "MainKey", NULL, _("Supported key values are as follows: Mod1, Mod4, Mod5, Ctrl"), NULL);
+            g_key_file_set_comment(gsKeyValue, "MainKey", NULL, _("Supported key values are as follows: Mod1, Mod4, Mod5, Ctrl, Shift"), NULL);
 
             // 窗口控制
             g_key_file_set_string (gsKeyValue, "ControlWindow", "focusLeft", "M1+Left");
@@ -221,11 +221,16 @@ static void init_default_config()
             g_key_file_set_string (gsKeyValue, "ControlWindow", "moveFocusUp", "M1+Shift+Up");
             g_key_file_set_comment(gsKeyValue, "ControlWindow", "moveFocusUp", _("Move the focus window up"), NULL);
 
+
+            // execute cmd
+            g_key_file_set_string (gsKeyValue, "HotKey", "openTerminator", "M1+Enter");
+            g_key_file_set_comment(gsKeyValue, "HotKey", "openTerminator", _("Open terminator"), NULL);
+
             //
-            g_key_file_save_to_file (gsKeyValue, "file.ini", &error);
-            if (error) {
-                DIE("%s", error->message);
-            }
+//            g_key_file_save_to_file (gsKeyValue, "file.ini", &error);
+//            if (error) {
+//                DIE("%s", error->message);
+//            }
 
 
             g_once_init_leave(&l, 1);
